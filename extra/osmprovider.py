@@ -539,7 +539,7 @@ if __name__ == "__main__":
             bbox = json.load(fp)
     maps = OSMProvider('Milan', **bbox)
     
-    maps.write('/tmp/weights')
+    maps.write('weights')
     # maps.writeDIMACS('/tmp/milan_map.gr')
-    maps.write_coo('/tmp/ids')
+    maps.write_coo('ids')
     # maps.writeP2P('/tmp/milan.p2p', map.generateRandomP2P(seed=1234))

@@ -47,6 +47,8 @@ public:
 
 private:
     void handle_get(http_request request);
+    void handle_post(http_request request);
+    
     Graph g;
     KDTree<2, int> tree;
     http_listener m_listener;
@@ -56,6 +58,8 @@ private:
 RoutesDealer::RoutesDealer(utility::string_t url, Graph &g, KDTree<2, int> &tree) : m_listener(url)
 {
     m_listener.support(methods::GET, std::bind(&RoutesDealer::handle_get, this, std::placeholders::_1));
+    m_listener.support(methods::POST, std::bind(&RoutesDealer::handle_post, this, std::placeholders::_1));
+    
     this->g = g;
     this->tree = tree;
 }
@@ -66,6 +70,19 @@ void send_error(http_request message, std::string body) {
     response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
     response.set_body(body);
     message.reply(response);
+}
+
+void RoutesDealer::handle_post(http_request request)
+{
+    try {
+        cout << utility::string_t(U(request))  << endl;
+    }
+    catch (const std::invalid_argument& e) {
+        send_error(request, e.what());
+    }
+    catch (...) {
+        send_error(request, "ERROR!");
+    }
 }
 
 void RoutesDealer::handle_get(http_request request)

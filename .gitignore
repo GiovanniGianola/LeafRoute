@@ -2,3 +2,4 @@
 .idea/
 routing/*.out
 routing/cmake-build-debug/
+routing/build
