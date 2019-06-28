@@ -53,7 +53,8 @@ private:
     void handle_get(http_request request);
     void handle_post(http_request request);
     
-    Graph g;
+    Graph g, g_pen;
+    bool is_pen;
     KDTree<2, int> tree;
     http_listener m_listener;
 };
@@ -66,6 +67,7 @@ RoutesDealer::RoutesDealer(utility::string_t url, Graph &g, KDTree<2, int> &tree
     
     this->g = g;
     this->tree = tree;
+    this->is_pen = 0;
 }
 
 
@@ -82,11 +84,18 @@ void RoutesDealer::handle_post(http_request request)
     
     try {
 		int perc = 0;
-		auto body = request.extract_string().get();   
+		auto body = request.extract_string().get();
+        cout << body << endl;
 		auto myMap = mappify(body);
 		for(auto const& p: myMap)
         	std::cout << '{' << p.first << " => " << p.second << '}' << '\n';
-		
+        
+		if (myMap.find("change") != myMap.end()) {
+            is_pen = boost::lexical_cast<bool>(myMap["change"]);
+        }
+        
+        cout << is_pen << endl;
+        
 		if (myMap.find("perc") != myMap.end()) {
             perc = stoi(myMap["perc"]);
         } else send_error(request, "Percentage not assigned.");
@@ -155,7 +164,15 @@ void RoutesDealer::handle_get(http_request request)
         if (keyMap.find("reroute") != keyMap.end()) {
             reroute = parseBoolean(keyMap["reroute"]);
         }
-        auto paths = get_alternative_routes(g, start, end, num_routes, 0.9, reroute);
+        
+        Graph g_tmp;
+        if(is_pen)
+            g_tmp = g_pen;
+        else
+            g_tmp = g;
+        
+        auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
+        
         http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         response.set_body(paths.dump());

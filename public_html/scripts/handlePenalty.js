@@ -13,6 +13,7 @@ $(document).ready(function(){
 function postPenalty(){
 
     var data = {
+        change: 1,
 		perc: 100
     };
     
