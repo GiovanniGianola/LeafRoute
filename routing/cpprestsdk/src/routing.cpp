@@ -1,5 +1,6 @@
 #include <cpprest/filestream.h>
 #include <boost/program_options.hpp>
+#include <boost/graph/graph_utility.hpp>
 #include <cpprest/http_listener.h>
 #include <cpprest/json.h>
 #include <cpprest/uri.h>
@@ -14,6 +15,7 @@
 #include <json11.hpp>
 #include <boost/graph/adj_list_serialize.hpp>
 #include <src/routesfetcher.h>
+#include <src/routespenalizer.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <iostream>
 #include <sstream>
@@ -30,9 +32,11 @@ using namespace arlib;
 using namespace std;
 
 
-using Graph = boost::adjacency_list<boost::vecS, boost::vecS,
-        boost::bidirectionalS, Location,
-        boost::property<boost::edge_weight_t, float>>;
+using Graph = boost::adjacency_list<boost::vecS, 
+									boost::vecS,
+									boost::bidirectionalS, 
+									Location,
+									boost::property<boost::edge_weight_t, float>>;
 using Vertex = typename boost::graph_traits<Graph>::vertex_descriptor;
 using Edge = typename boost::graph_traits<Graph>::edge_descriptor;
 
@@ -74,23 +78,54 @@ void send_error(http_request message, std::string body) {
 
 void RoutesDealer::handle_post(http_request request)
 {
+	cout << "\nHandle POST" << endl;
+    
     try {
-        cout << utility::string_t(U(request))  << endl;
+		int perc = 0;
+		auto body = request.extract_string().get();   
+		auto myMap = mappify(body);
+		for(auto const& p: myMap)
+        	std::cout << '{' << p.first << " => " << p.second << '}' << '\n';
+		
+		if (myMap.find("perc") != myMap.end()) {
+            perc = stoi(myMap["perc"]);
+        } else send_error(request, "Percentage not assigned.");
+		
+		cout << perc << endl;
+		
+		//boost::print_graph(g);
+		//boost::print_vertices(g);
+		bool done = penalize_edges(perc);
+		
+		cout << done << endl;
+		
+		http_response response(status_codes::OK);
+        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+        response.set_body("resresres");
+        request.reply(response);
+        cout << endl;
     }
     catch (const std::invalid_argument& e) {
+		cout << "Error Argument" << endl;
         send_error(request, e.what());
     }
     catch (...) {
+		cout << "Error" << endl;
         send_error(request, "ERROR!");
     }
 }
 
 void RoutesDealer::handle_get(http_request request)
 {
+	cout << "\nHandle GET" << endl;
+	
     try {
         bool reroute = false;
-        float lat, lon;
+        float lat = 0.0, lon = 0.0;
         auto url_message= uri::decode(request.relative_uri().to_string());
+		
+		cout << url_message << endl;
+		
         url_message.erase(0,2);
         map<utility::string_t, utility::string_t> keyMap = uri::split_query(url_message);
         int num_routes;
@@ -142,7 +177,7 @@ int main(int argc, char* argv[]) {
     po::options_description desc("Allowed options");
     std::string endpoint;
     desc.add_options()
-            ("endpoint", po::value<string>()->default_value("http://0.0.0.0:1337/getroutes?"), "Insert the server endpoint")
+            ("endpoint", po::value<string>()->default_value("http://0.0.0.0:1337/"), "Insert the server endpoint")
             ;
     po::variables_map opts;
     po::positional_options_description p;
@@ -168,7 +203,7 @@ int main(int argc, char* argv[]) {
     cout << utility::string_t(U("Listening for requests at 0.0.0.0:1337"))  << endl;
 
     std::string cline;
-    std::wcout << U("Hit Enter to close the listener.") << endl;
+    std::wcout << U("Hit Enter to close the listener...") << endl;
     std::getline(std::cin, cline);
 
     listener.close().wait();

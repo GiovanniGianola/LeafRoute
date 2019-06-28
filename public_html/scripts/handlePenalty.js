@@ -12,13 +12,18 @@ $(document).ready(function(){
 
 function postPenalty(){
 
-    var data = JSON.stringify({
-
-    });
+    var data = {
+		perc: 100
+    };
     
 	console.log(endpoint);
+	console.log(data);
     
-    $.post(endpoint, data, function(data, status){
-        alert("Data: " + data + "\nStatus: " + status);
-    });
+    $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
+			console.log('Request Done: ' + endpoint + '/postpenalty/, \nres: ' + response);
+			console.log(data);
+        }).fail(function(textStatus, error) {
+            alert(textStatus.responseText);
+            console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
+        });
 }

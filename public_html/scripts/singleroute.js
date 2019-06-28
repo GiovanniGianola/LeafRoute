@@ -80,7 +80,7 @@ $('#address-src').typeahead(null, {
     displayKey: 'description'
 });
 
-let endpoint = 'http://localhost:1337/getroutes';
+let endpoint = 'http://localhost:1337/';
 $('#endpoint').val(endpoint);
 var updateEndpoint = function() {
     endpoint = $('#endpoint').val();
@@ -261,14 +261,17 @@ $('#search').click(function(e){
     $('#follow').css('display', 'inline-block');
     $('#options-panel').html('');
     let startTime = new Date().getTime();
-    $.getJSON( endpoint, {
+	var data = {
         s_lat: sourcePlace[0],
         s_lon: sourcePlace[1],
         e_lat: destinationPlace[0],
         e_lon: destinationPlace[1],
         n_routes: 3,
-        reroute: false} )
+        reroute: false
+	}
+    $.getJSON( endpoint + '/getroutes/', data )
         .done(function( json ) {
+			console.log(data);
             let endTime = new Date().getTime();
             stats.times.push({
                 s_lat: sourcePlace[0],

@@ -98,8 +98,7 @@ std::vector<std::pair<Point<2>, int>> location_graph_from_string(std::string wei
 }
 
 template<typename Graph, typename Vertex>
-void get_vertex(float lat1, float long1,
-                  Graph &g, Vertex &v) {
+void get_vertex(float lat1, float long1, Graph &g, Vertex &v) {
     float min = FLT_MAX;
     for (auto [v_it, v_end] = vertices(g); v_it != v_end; ++v_it) {
         float curr = distance(lat1, long1, g[*v_it].lat, g[*v_it].lon);
@@ -115,8 +114,7 @@ void get_vertex(float lat1, float long1,
 }
 
 template<typename Vertex>
-void get_vertex(float lat1, float long1,
-        KDTree<2, int> &tree, Vertex &v) {
+void get_vertex(float lat1, float long1, KDTree<2, int> &tree, Vertex &v) {
     Point<2> key(lat1,long1);
     v = tree.kNNValue(key, 1);
     
