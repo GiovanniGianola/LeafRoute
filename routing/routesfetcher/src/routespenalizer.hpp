@@ -24,6 +24,8 @@
 #include "utils.hpp"
 #include <filesystem>
 
-//template <typename Graph>
-bool penalize_edges(int perc);
+
+template <typename Graph>
+bool penalize_edges(Graph &g, int perc);
+
 #endif //MAIN_ROUTESPENALIZER_H

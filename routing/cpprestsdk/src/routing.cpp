@@ -15,11 +15,12 @@
 #include <json11.hpp>
 #include <boost/graph/adj_list_serialize.hpp>
 #include <src/routesfetcher.h>
-#include <src/routespenalizer.h>
+#include <src/routespenalizer.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <iostream>
 #include <sstream>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/graph/copy.hpp>
 
 using namespace utility;
 using namespace web;
@@ -85,28 +86,32 @@ void RoutesDealer::handle_post(http_request request)
     try {
 		int perc = 0;
 		auto body = request.extract_string().get();
-        cout << body << endl;
-		auto myMap = mappify(body);
+        cout << "body: " << body << endl;
+		//auto myMap = mappify(body);
+		map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
 		for(auto const& p: myMap)
         	std::cout << '{' << p.first << " => " << p.second << '}' << '\n';
         
 		if (myMap.find("change") != myMap.end()) {
             is_pen = boost::lexical_cast<bool>(myMap["change"]);
-        }
-        
-        cout << is_pen << endl;
+		}
         
 		if (myMap.find("perc") != myMap.end()) {
-            perc = stoi(myMap["perc"]);
+         
+			perc = stoi(myMap["perc"]);
         } else send_error(request, "Percentage not assigned.");
 		
-		cout << perc << endl;
+		if(perc > 0)
+			is_pen = 1;
+		
+		cout << "is_pen: " << is_pen << endl;
 		
 		//boost::print_graph(g);
 		//boost::print_vertices(g);
-		bool done = penalize_edges(perc);
+
+		bool done = penalize_edges(g, perc);
 		
-		cout << done << endl;
+		cout << "done: " << done << endl;
 		
 		http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
@@ -167,9 +172,9 @@ void RoutesDealer::handle_get(http_request request)
         
         Graph g_tmp;
         if(is_pen)
-            g_tmp = g_pen;
+            copy_graph(g_pen, g_tmp);
         else
-            g_tmp = g;
+            copy_graph(g, g_tmp);
         
         auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
         
