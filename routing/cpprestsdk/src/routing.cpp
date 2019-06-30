@@ -15,7 +15,7 @@
 #include <json11.hpp>
 #include <boost/graph/adj_list_serialize.hpp>
 #include <src/routesfetcher.h>
-#include <src/routespenalizer.hpp>
+#include <src/routespenalizer.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <iostream>
 #include <sstream>
@@ -109,6 +109,7 @@ void RoutesDealer::handle_post(http_request request)
 		//boost::print_graph(g);
 		//boost::print_vertices(g);
 
+		
 		bool done = penalize_edges(g, perc);
 		
 		cout << "done: " << done << endl;

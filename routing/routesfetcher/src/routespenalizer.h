@@ -24,8 +24,10 @@
 #include "utils.hpp"
 #include <filesystem>
 
-
 template <typename Graph>
-bool penalize_edges(Graph &g, int perc);
-
+bool penalize_edges(Graph &g, int perc){
+	 cout << "wewe4" << endl;
+	 cout << "wewe4d" << endl;
+	 return true;
+}
 #endif //MAIN_ROUTESPENALIZER_H

@@ -12,7 +12,7 @@ add_library(routesfetcher
         src/routesfetcher.cpp
         src/routesfetcher.h
 		src/routespenalizer.cpp
-        src/routespenalizer.hpp
+        src/routespenalizer.h
         src/utils.hpp
         src/utils.cpp)
 target_link_libraries(routesfetcher PUBLIC kdtree arlib json11 ${Boost_LIBRARIES})
