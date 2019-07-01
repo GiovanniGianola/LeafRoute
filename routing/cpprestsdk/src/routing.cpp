@@ -96,13 +96,17 @@ void RoutesDealer::handle_post(http_request request)
 		if (myMap.find("perc") != myMap.end()) {
 			perc = stoi(myMap["perc"]);
         } else send_error(request, "Percentage not assigned.");
-		
-		if(is_pen && perc > 0)
-            penalize_edges(g, g_pen, perc);
 
-		http_response response(status_codes::OK);
+        http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-        response.set_body("Penalty applied");
+		if(is_pen && perc >= 0) {
+            penalize_edges(g, g_pen = 0, perc);
+            response.set_body("Penalty applied");
+        }else
+            response.set_body("Penalty Removed");
+
+
+
         request.reply(response);
         cout << endl;
     }
