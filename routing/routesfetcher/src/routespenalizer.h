@@ -25,26 +25,26 @@
 #include <filesystem>
 
 template <typename Graph>
-bool penalize_edges(Graph &g, int perc){
-    typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
-    typedef typename boost::graph_traits<Graph>::edge_descriptor Edge ;
-
+void penalize_edges(Graph &g, Graph &g_pen, int perc){
     // get the property map for vertex indices
     typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
+    typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
+    typename boost::graph_traits<Graph>::edge_iterator ei, ei_end;
+
+    copy_graph(g, g_pen);
+
     IndexMap index = get(boost::vertex_index, g);
 
-    std::cout << "edges(g) = ";
-    typename boost::graph_traits<Graph>::edge_iterator ei, ei_end;
-    for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+    for (boost::tie(ei, ei_end) = edges(g_pen); ei != ei_end; ++ei) {
 
-        std::pair<Edge, bool> ed = boost::edge(index[source(*ei, g)], index[target(*ei, g)], g);
-        float weight = get(boost::edge_weight_t(), g, ed.first);
-        cout << "weight: " << weight << endl;
+        std::pair<Edge, bool> ed = boost::edge(index[source(*ei, g_pen)], index[target(*ei, g_pen)], g_pen);
+        //float weight = get(boost::edge_weight_t(), g_pen, ed.first);
+        //cout << "Weight: " << weight;
+        get(boost::edge_weight_t(), g_pen, ed.first) *= 2;
+        //float new_weight = get(boost::edge_weight_t(), g_pen, ed.first);
+        //cout << ", new Weight: " << new_weight << endl;
     }
 
-    std::cout << std::endl;
-
 	cout << "Perc: " << perc << endl;
-	return true;
 }
 #endif //MAIN_ROUTESPENALIZER_H

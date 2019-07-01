@@ -68,7 +68,7 @@ RoutesDealer::RoutesDealer(utility::string_t url, Graph &g, KDTree<2, int> &tree
     
     this->g = g;
     this->tree = tree;
-    this->is_pen = 0;
+    this->is_pen = false;
 }
 
 
@@ -87,33 +87,19 @@ void RoutesDealer::handle_post(http_request request)
 		int perc = 0;
 		auto body = request.extract_string().get();
         cout << "body: " << body << endl;
-		//auto myMap = mappify(body);
 		map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
-		for(auto const& p: myMap)
-        	std::cout << '{' << p.first << " => " << p.second << '}' << '\n';
+		//for(auto const& p: myMap)
+        //	std::cout << '{' << p.first << " => " << p.second << '}' << '\n';
         
-		if (myMap.find("change") != myMap.end()) {
+		if (myMap.find("change") != myMap.end())
             is_pen = boost::lexical_cast<bool>(myMap["change"]);
-		}
-        
 		if (myMap.find("perc") != myMap.end()) {
-         
 			perc = stoi(myMap["perc"]);
         } else send_error(request, "Percentage not assigned.");
 		
-		if(perc > 0)
-			is_pen = 1;
-		
-		cout << "is_pen: " << is_pen << endl;
-		
-		//boost::print_graph(g);
-		//boost::print_vertices(g);
+		if(is_pen && perc > 0)
+            penalize_edges(g, g_pen, perc);
 
-		
-		bool done = penalize_edges(g, perc);
-		
-		cout << "done: " << done << endl;
-		
 		http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         response.set_body("resresres");
@@ -172,10 +158,13 @@ void RoutesDealer::handle_get(http_request request)
         }
         
         Graph g_tmp;
-        if(is_pen)
+        if(is_pen) {
+            cout << "Using modified Graph" << endl;
             copy_graph(g_pen, g_tmp);
-        else
+        }else {
+            cout << "Using original Graph" << endl;
             copy_graph(g, g_tmp);
+        }
         
         auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
         
