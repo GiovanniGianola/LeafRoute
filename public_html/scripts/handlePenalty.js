@@ -5,6 +5,7 @@ let data = {
     multi: 1
 };
 
+var drawControl;
 
 
 $(document).ready(function(){
@@ -44,7 +45,49 @@ $(document).ready(function(){
         $('#percentage').val('');
     });
 
+    $("#set").click(function() {
+        if(!drawControl) {
+            drawControl = new L.Control.Draw({
+                draw: {
+                    polygon: false,
+                    polyline: false,
+                    marker: false,
+                    circle: false
+                },
+                edit: {
+                    featureGroup: drawnItems,
+                    edit: false
+                }
+            });
+            map.addControl(drawControl);
+            inSettings = true;
+        }
+    });
+    $("#hom").click(function() {
+        if(drawControl) {
+            map.removeControl(drawControl);
+            drawControl = undefined;
+            inSettings = false;
+        }
+    });
 
+    map.on(L.Draw.Event.CREATED, function (e) {
+
+        var layer = e.layer;
+        drawnItems.addLayer(layer);
+
+        console.log('OnCreated');
+        console.log(layer.getLatLngs())
+
+    });
+
+    map.on('draw:deleted', function (e) {
+        var layers = e.layers;
+        layers.eachLayer(function (layer) {
+            console.log('OnRemove');
+            console.log(layer.getLatLngs())
+        });
+    });
 });
 
 // -------------- REQUESTS ---------------

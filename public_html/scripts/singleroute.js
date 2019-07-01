@@ -1,9 +1,17 @@
 var map = L.map('map').setView([45.46133, 9.15930], 12);
+var drawnItems = L.featureGroup().addTo(map);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+}, { 'drawlayer': drawnItems }, { position: 'topleft', collapsed: false }).addTo(map);
 
+map.on(L.Draw.Event.CREATED, function (event) {
+    var layer = event.layer;
+
+    drawnItems.addLayer(layer);
+});
+
+let inSettings = false;
 // create the sidebar instance and add it to the map
 var sidebar = L.control.sidebar({ container: 'sidebar' })
 .addTo(map)
@@ -102,24 +110,26 @@ let selectedRoutePolyline = null;
 let clickPosition = 0;
 
 map.on('click', function(e){
-    $.getJSON('https://nominatim.openstreetmap.org/reverse?', {
-        lat : e.latlng.lat,
-        lon : e.latlng.lng,
-        format : 'json'} )
-        .done(function( json ) {
-            console.log(json);
-            let addressSrc= $('#address-src').val();
-            if (clickPosition == 1) {
-                clickPosition = 0;
-                $('#address-dest').val(json.display_name);
-                setDestination(null, [e.latlng.lat, e.latlng.lng])
-            }
-            else if (clickPosition == 0) {
-                clickPosition = 1;
-                $('#address-src').val(json.display_name);
-                setSource(null, [e.latlng.lat, e.latlng.lng])
-            }
-    });
+    if(!inSettings) {
+        $.getJSON('https://nominatim.openstreetmap.org/reverse?', {
+            lat: e.latlng.lat,
+            lon: e.latlng.lng,
+            format: 'json'
+        })
+            .done(function (json) {
+                console.log(json);
+                let addressSrc = $('#address-src').val();
+                if (clickPosition == 1) {
+                    clickPosition = 0;
+                    $('#address-dest').val(json.display_name);
+                    setDestination(null, [e.latlng.lat, e.latlng.lng])
+                } else if (clickPosition == 0) {
+                    clickPosition = 1;
+                    $('#address-src').val(json.display_name);
+                    setSource(null, [e.latlng.lat, e.latlng.lng])
+                }
+            });
+    }
 });
 
 var choosePolyLine = function(selectedId) {

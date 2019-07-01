@@ -35,6 +35,7 @@
             integrity="sha256-FPJJt8nA+xL4RU6/gsriA8p8xAeLGatoyTjldvQKGdE="
             crossorigin="anonymous"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
     <link rel="stylesheet" href="style/typeaheadjs.css">
     <link rel="stylesheet" href="style/leaflet-sidebar.css" />
     <link rel="stylesheet" href="style/singleroute.css"/>
@@ -48,10 +49,10 @@
             <!-- top aligned tabs -->
             <ul role="tablist">
                 <li>
-                    <a href="#home" role="tab"><i class="fa fa-bars active"></i></a>
+                    <a id="hom" href="#home" role="tab"><i class="fa fa-bars active"></i></a>
                 </li>
                 <li>
-                    <a href="#settings" role="tab" title="Settings"><i class="fas fa-cog"></i></a>
+                    <a id="set" href="#settings" role="tab" title="Settings"><i class="fas fa-cog"></i></a>
                 </li>
             </ul>
 
@@ -146,6 +147,7 @@
     <script src="scripts/MovingMarker.js"></script>
     <script src="scripts/ARLibMarker.js"></script>
     <script src="scripts/StrokePolyline.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
 
     <script src="scripts/singleroute.js"></script>
     <script src="scripts/handlePenalty.js"></script>
