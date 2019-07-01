@@ -102,7 +102,7 @@ void RoutesDealer::handle_post(http_request request)
 
 		http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-        response.set_body("resresres");
+        response.set_body("Penalty applied");
         request.reply(response);
         cout << endl;
     }

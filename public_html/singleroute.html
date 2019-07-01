@@ -115,9 +115,13 @@
                 </div>
                 <label class="row" style="font-size: 14pt; margin-top: .5rem;">Penalty</label>
                 <div class="row">
-                    <button type="button" class="btn btn-primary" id="applyPenalty">
-                        Apply Penalty
-                    </button>
+                    <div class="form-group">
+                        <input type="number" max="100" min="0" class="form-control" id="percentage" placeholder="Penalty Percentage">
+                    </div>
+                </div>
+                <div class="row">
+                    <button type="button" class="btn btn-primary mr-2" id="applyPenalty">Apply Penalty</button>
+                    <button type="button" class="btn btn-primary" id="defaultGraph">Default Graph</button>
                 </div>
                 <label class="row" style="font-size: 14pt; margin-top: .5rem;">Extra</label>
                 <div class="row">
