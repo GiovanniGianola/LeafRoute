@@ -84,7 +84,7 @@ void RoutesDealer::handle_post(http_request request)
 	cout << "\nHandle POST" << endl;
     
     try {
-		int perc = 0;
+		int perc = 0, multi = 1;
 		auto body = request.extract_string().get();
         cout << "body: " << body << endl;
 		map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
@@ -96,11 +96,14 @@ void RoutesDealer::handle_post(http_request request)
 		if (myMap.find("perc") != myMap.end()) {
 			perc = stoi(myMap["perc"]);
         } else send_error(request, "Percentage not assigned.");
+        if (myMap.find("multi") != myMap.end()) {
+            multi = stoi(myMap["multi"]);
+        } else send_error(request, "Multiplier not assigned.");
 
         http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 		if(is_pen && perc >= 0) {
-            penalize_edges(g, g_pen = 0, perc);
+            penalize_edges(g, g_pen = 0, perc, multi);
             response.set_body("Penalty applied");
         }else
             response.set_body("Penalty Removed");

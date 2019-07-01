@@ -25,7 +25,7 @@
 #include <filesystem>
 
 template <typename Graph>
-void penalize_edges(Graph &g, Graph &g_pen, int perc){
+void penalize_edges(Graph &g, Graph &g_pen, int perc, int multi){
     // get the property map for vertex indices
     typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
     typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
@@ -43,7 +43,7 @@ void penalize_edges(Graph &g, Graph &g_pen, int perc){
         std::pair<Edge, bool> ed = boost::edge(index[source(*ei, g_pen)], index[target(*ei, g_pen)], g_pen);
         //float weight = get(boost::edge_weight_t(), g_pen, ed.first);
         //cout << "Weight: " << weight;
-        get(boost::edge_weight_t(), g_pen, ed.first) *= 2;
+        get(boost::edge_weight_t(), g_pen, ed.first) *= multi;
         //float new_weight = get(boost::edge_weight_t(), g_pen, ed.first);
         //cout << ", new Weight: " << new_weight << endl;
     }
@@ -51,5 +51,6 @@ void penalize_edges(Graph &g, Graph &g_pen, int perc){
     //cout << num_edges(g) << endl;
 
 	cout << "Percentage: " << perc << endl;
+    cout << "Multiplier: " << multi << endl;
 }
 #endif //MAIN_ROUTESPENALIZER_H
