@@ -5,6 +5,8 @@ let data = {
     multi: 1
 };
 
+
+
 $(document).ready(function(){
     // HANDLE ON APPLY PENALTY
 	$("#applyPenalty").on("click", function() {
@@ -40,7 +42,8 @@ $(document).ready(function(){
 	    postPenalty();
         $('#multiplier').val('');
         $('#percentage').val('');
-    })
+    });
+
 
 });
 
