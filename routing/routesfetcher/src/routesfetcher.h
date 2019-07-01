@@ -91,9 +91,9 @@ std::vector<std::pair<Point<2>, int>> location_graph_from_string(std::string wei
     Graph G(edges.begin(), edges.end(), weights.begin(), locations.size());
     g = G;
     auto index = get(boost::vertex_index, g);
-    std::for_each(vertices(g).first, vertices(g).second,
-                  [&g, locations, index](auto const &v) {g[v].lon = locations[index[v]].lon;
-                      g[v].lat = locations[index[v]].lat; });
+    std::for_each(vertices(g).first, vertices(g).second, [&g, locations, index](auto const &v) {
+        g[v].lon = locations[index[v]].lon; g[v].lat = locations[index[v]].lat;
+    });
     return data;
 }
 

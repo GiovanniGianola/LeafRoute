@@ -26,8 +26,25 @@
 
 template <typename Graph>
 bool penalize_edges(Graph &g, int perc){
-	 cout << "wewe4" << endl;
-	 cout << "wewe4d" << endl;
-	 return true;
+    typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
+    typedef typename boost::graph_traits<Graph>::edge_descriptor Edge ;
+
+    // get the property map for vertex indices
+    typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
+    IndexMap index = get(boost::vertex_index, g);
+
+    std::cout << "edges(g) = ";
+    typename boost::graph_traits<Graph>::edge_iterator ei, ei_end;
+    for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+
+        std::pair<Edge, bool> ed = boost::edge(index[source(*ei, g)], index[target(*ei, g)], g);
+        float weight = get(boost::edge_weight_t(), g, ed.first);
+        cout << "weight: " << weight << endl;
+    }
+
+    std::cout << std::endl;
+
+	cout << "Perc: " << perc << endl;
+	return true;
 }
 #endif //MAIN_ROUTESPENALIZER_H
