@@ -32,3 +32,17 @@ bool vertexInRect(rectangle rect, float lat, float lon){
     return true;
 }
 
+bool delElemList(rectangle rect, list<rectangle> &rect_list){
+
+    auto itrect = rect_list.begin();
+    while (  itrect != rect_list.end() )
+    {
+        if(rect.min_lat == itrect->min_lat && rect.max_lat == itrect->max_lat && rect.min_long == itrect->min_long && rect.max_long == itrect->max_long){
+            rect_list.erase(itrect++);
+            return true;
+        }
+        ++itrect;
+    }
+    return false;
+}
+

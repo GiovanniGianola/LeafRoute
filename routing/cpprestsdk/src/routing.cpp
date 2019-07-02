@@ -60,6 +60,7 @@ private:
     http_listener m_listener;
 
     string func[2];
+    list<rectangle> rect_list;
 };
 
 
@@ -97,7 +98,6 @@ void send_error(http_request message, std::string body) {
 void RoutesDealer::handle_post(http_request request)
 {
 	cout << "\nHandle POST" << endl;
-    
     try {
 		float min_lat = 0.0, max_lat = 0.0, min_long = 0.0, max_long = 0.0;
 		int multi = 1;
@@ -138,15 +138,24 @@ void RoutesDealer::handle_post(http_request request)
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
         if(function == func[0]){
-            add_penalization_rect(g, g_pen, multi, min_lat, max_lat, min_long, max_long);
+            add_penalization_rect(g, g_pen, current_rect);
             is_pen = true;
+            rect_list.push_back(current_rect);
             response.set_body("Rect penalty applied");
         }else if(function == func[1]){
-            del_penalization_rect(g, g_pen, min_lat, max_lat, min_long, max_long);
-            response.set_body("Rect penalty removed");
+            del_penalization_rect(g, g_pen, current_rect);
+
+            if(delElemList(current_rect, rect_list))
+                response.set_body("Rect penalty removed");
+            else
+                response.set_body("Rect not in list");
+
+            if(rect_list.empty())
+                is_pen = false;
         }else{
             send_error(request, "Invalid Function.");
         }
+        cout << "Rect Count: " << rect_list.size() << endl;
 		/*if(is_pen && perc >= 0) {
             penalize_edges(g, g_pen = 0, perc, multi);
             response.set_body("Penalty applied");
