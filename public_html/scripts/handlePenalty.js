@@ -3,6 +3,7 @@ let data = {};
 let func = ['add', 'del'];
 
 var drawControl;
+let penalizedRoutesPolyline = [];
 
 let postRect = {
     multi: 2,
@@ -108,12 +109,34 @@ function postPenalty(data){
 	console.log(data);
 
     $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
-			console.log('Request Done: ' + response);
+            var json = JSON.parse(response);
+			console.log('Request Done');
+			console.log(json);
+            drawPolylines(json);
         }).fail(function(textStatus, error) {
             alert(textStatus.responseText);
             console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
         });
 }
+
+// -------------- HTML ---------------
+
+function drawPolylines(json){
+    var c_path = {};
+    for (let i = json.length-1; i >= 0; i--){
+        c_path = json[i];
+        fancyPolyline = strokePolyline(
+            c_path,
+            {
+                ...routeColors[i===0 ? 0 : 1],
+                groupId: i
+            });
+        penalizedRoutesPolyline.push(fancyPolyline);
+        fancyPolyline.addTo(map);
+    }
+}
+
+// -------------- AUXILIARY FUNCTIONS ---------------
 
 function fillData(data){
 
@@ -131,5 +154,4 @@ function fillData(data){
     postRect.max_lat = Math.max( ...lat );
     postRect.min_long = Math.min( ...lng );
     postRect.max_long = Math.max( ...lng );
-
 }
