@@ -1,11 +1,18 @@
 console.log("Loading Handle Penalty");
-let data = {
-    change: 0,
-    perc: 0,
-    multi: 1
-};
+let data = {};
+let func = ['add', 'del'];
 
 var drawControl;
+
+let postRect = {
+    multi: 1,
+    function: func[0],
+    min_lat: 0.0,
+    max_lat: 0.0,
+    min_long: 0.0,
+    max_long: 0.0
+};
+
 
 
 $(document).ready(function(){
@@ -37,14 +44,6 @@ $(document).ready(function(){
         }
    	});
 
-	$("#defaultGraph").on("click", function() {
-	    console.log('Use default graph');
-        data.change = 0;
-	    postPenalty();
-        $('#multiplier').val('');
-        $('#percentage').val('');
-    });
-
     $("#set").click(function() {
         if(!drawControl) {
             drawControl = new L.Control.Draw({
@@ -75,7 +74,7 @@ $(document).ready(function(){
 
         var layer = e.layer;
         drawnItems.addLayer(layer);
-
+        data = layer.getLatLngs();
         console.log('OnCreated');
         console.log(layer.getLatLngs())
 
@@ -92,7 +91,7 @@ $(document).ready(function(){
 
 // -------------- REQUESTS ---------------
 
-function postPenalty(){
+function postPenalty(data){
     
 	console.log(endpoint);
 	console.log(data);
