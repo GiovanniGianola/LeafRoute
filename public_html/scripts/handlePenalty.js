@@ -81,10 +81,6 @@ $(document).ready(function(){
         fillData(data);
         postRect.function = func[0];
         postPenalty(postRect);
-
-        console.log('OnCreated');
-        console.log(layer.getLatLngs());
-
     });
 
     map.on('draw:deleted', function (e) {
@@ -95,9 +91,6 @@ $(document).ready(function(){
             fillData(data);
             postRect.function = func[1];
             postPenalty(postRect);
-
-            console.log('OnRemove');
-            console.log(layer.getLatLngs())
         });
     });
 
@@ -107,10 +100,6 @@ $(document).ready(function(){
 // -------------- REQUESTS ---------------
 
 function postPenalty(data){
-    
-	console.log(endpoint);
-	console.log(data);
-
     $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
             var json = JSON.parse(response);
 			console.log('Request Done');
@@ -122,10 +111,10 @@ function postPenalty(data){
 }
 
 function getRects(){
-
     $.getJSON(endpoint + '/getrects/').done(function(response) {
-        var json = JSON.parse(response);
+        var json = response;
         console.log('Request Done');
+        console.log(json);
         //drawPolylines(json);
     }).fail(function(textStatus, error) {
         alert(textStatus.responseText);

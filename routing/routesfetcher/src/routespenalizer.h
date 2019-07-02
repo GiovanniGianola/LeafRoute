@@ -45,6 +45,7 @@ rectangle fillRect(float min_lat, float max_lat, float min_long, float max_long,
 bool checkInput(rectangle rect);
 bool vertexInRect(rectangle rect, float lat, float lon);
 bool delElemList(rectangle rect, list<rectangle> &rect_list);
+json11::Json getRects(list<rectangle> &rect_list);
 
 template <typename Graph>
 json11::Json add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
@@ -82,7 +83,9 @@ json11::Json add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
             //fill json
             vector<json11::Json::array> json_arr;
             auto start = json11::Json::array {source_lat, source_lon,0};
-            auto end = json11::Json::array {target_lat, target_lon,get(boost::edge_weight_t(), g_pen, ed.first)};
+            auto end = json11::Json::array {
+                target_lat, target_lon,get(boost::edge_weight_t(), g_pen, ed.first)
+            };
 
             json_arr.push_back(start);
             json_arr.push_back(end);

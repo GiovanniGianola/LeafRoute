@@ -184,14 +184,15 @@ void RoutesDealer::handle_get(http_request request)
         float lat = 0.0, lon = 0.0;
         auto url = uri::decode(request.request_uri().to_string());
         auto url_message= uri::decode(request.relative_uri().to_string());
-
         cout << url << endl;
 		cout << url_message << endl;
 
         if(url.find("//getrects/") == 0){
+            auto rects = getRects(rect_list);
+
             http_response response(status_codes::OK);
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-            response.set_body("getRect");
+            response.set_body(rects.dump());
             request.reply(response);
             cout << endl;
 

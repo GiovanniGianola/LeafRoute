@@ -35,8 +35,7 @@ bool vertexInRect(rectangle rect, float lat, float lon){
 bool delElemList(rectangle rect, list<rectangle> &rect_list){
 
     auto itrect = rect_list.begin();
-    while (  itrect != rect_list.end() )
-    {
+    while(itrect != rect_list.end()){
         if(rect.min_lat == itrect->min_lat && rect.max_lat == itrect->max_lat && rect.min_long == itrect->min_long && rect.max_long == itrect->max_long){
             rect_list.erase(itrect++);
             return true;
@@ -44,5 +43,19 @@ bool delElemList(rectangle rect, list<rectangle> &rect_list){
         ++itrect;
     }
     return false;
+}
+
+json11::Json getRects(list<rectangle> &rect_list){
+    vector<json11::Json> jsonRects;
+
+    auto itrect = rect_list.begin();
+    while(itrect != rect_list.end()){
+        auto rect = json11::Json::array {
+                itrect->min_lat, itrect->min_long, itrect->max_lat, itrect->max_long
+        };
+        jsonRects.push_back(rect);
+        ++itrect;
+    }
+    return jsonRects;
 }
 
