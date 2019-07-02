@@ -182,56 +182,67 @@ void RoutesDealer::handle_get(http_request request)
     try {
         bool reroute = false;
         float lat = 0.0, lon = 0.0;
+        auto url = uri::decode(request.request_uri().to_string());
         auto url_message= uri::decode(request.relative_uri().to_string());
-		
+
+        cout << url << endl;
 		cout << url_message << endl;
-		
-        url_message.erase(0,2);
-        map<utility::string_t, utility::string_t> keyMap = uri::split_query(url_message);
-        int num_routes;
-        if (keyMap.find("s_lat") != keyMap.end()) {
-            lat = stof(keyMap["s_lat"]);
-        } else send_error(request, "Starting latitude missing");
-        if (keyMap.find("s_lon") != keyMap.end()) {
-            lon = stof(keyMap["s_lon"]);
-        } else send_error(request, "Starting longitude missing");
-        Vertex start;
-        auto start_get_vertices = chrono::steady_clock::now();
-        get_vertex(lat, lon, tree, start);
-        if (keyMap.find("e_lat") != keyMap.end()) {
-            lat = stof(keyMap["e_lat"]);
-        } else send_error(request, "Destination latitude missing");
-        if (keyMap.find("e_lon") != keyMap.end()) {
-            lon = stof(keyMap["e_lon"]);
-        } else send_error(request, "Destination longitude missing");
-        if (keyMap.find("n_routes") != keyMap.end()) {
-            num_routes = std::stoi(keyMap["n_routes"]);
+
+        if(url.find("//getrects/") == 0){
+            http_response response(status_codes::OK);
+            response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+            response.set_body("getRect");
+            request.reply(response);
+            cout << endl;
+
+        }else if(url.find("//getroutes/") == 0){
+            url_message.erase(0,2);
+            map<utility::string_t, utility::string_t> keyMap = uri::split_query(url_message);
+            int num_routes;
+            if (keyMap.find("s_lat") != keyMap.end()) {
+                lat = stof(keyMap["s_lat"]);
+            } else send_error(request, "Starting latitude missing");
+            if (keyMap.find("s_lon") != keyMap.end()) {
+                lon = stof(keyMap["s_lon"]);
+            } else send_error(request, "Starting longitude missing");
+            Vertex start;
+            auto start_get_vertices = chrono::steady_clock::now();
+            get_vertex(lat, lon, tree, start);
+            if (keyMap.find("e_lat") != keyMap.end()) {
+                lat = stof(keyMap["e_lat"]);
+            } else send_error(request, "Destination latitude missing");
+            if (keyMap.find("e_lon") != keyMap.end()) {
+                lon = stof(keyMap["e_lon"]);
+            } else send_error(request, "Destination longitude missing");
+            if (keyMap.find("n_routes") != keyMap.end()) {
+                num_routes = std::stoi(keyMap["n_routes"]);
+            }
+            else num_routes = 1;
+            Vertex end;
+            get_vertex(lat, lon, tree, end);
+            auto end_get_vertices = chrono::steady_clock::now();
+            logElapsedMillis("Found vertices in graph", start_get_vertices, end_get_vertices);
+            if (keyMap.find("reroute") != keyMap.end()) {
+                reroute = parseBoolean(keyMap["reroute"]);
+            }
+
+            Graph g_tmp;
+            if(is_pen && boost::num_vertices(g_pen) > 0) {
+                cout << "Using modified Graph" << endl;
+                copy_graph(g_pen, g_tmp);
+            }else {
+                cout << "Using original Graph" << endl;
+                copy_graph(g, g_tmp);
+            }
+
+            auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
+
+            http_response response(status_codes::OK);
+            response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+            response.set_body(paths.dump());
+            request.reply(response);
+            cout << endl;
         }
-        else num_routes = 1;
-        Vertex end;
-        get_vertex(lat, lon, tree, end);
-        auto end_get_vertices = chrono::steady_clock::now();
-        logElapsedMillis("Found vertices in graph", start_get_vertices, end_get_vertices);
-        if (keyMap.find("reroute") != keyMap.end()) {
-            reroute = parseBoolean(keyMap["reroute"]);
-        }
-        
-        Graph g_tmp;
-        if(is_pen && boost::num_vertices(g_pen) > 0) {
-            cout << "Using modified Graph" << endl;
-            copy_graph(g_pen, g_tmp);
-        }else {
-            cout << "Using original Graph" << endl;
-            copy_graph(g, g_tmp);
-        }
-        
-        auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
-        
-        http_response response(status_codes::OK);
-        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-        response.set_body(paths.dump());
-        request.reply(response);
-        cout << endl;
     }
     catch (const std::invalid_argument& e) {
         send_error(request, e.what());

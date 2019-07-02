@@ -1,6 +1,7 @@
 console.log("Loading Handle Penalty");
 let data = {};
 let func = ['add', 'del'];
+let multi = 2;
 
 var drawControl;
 let penalizedRoutesPolyline = [];
@@ -99,6 +100,8 @@ $(document).ready(function(){
             console.log(layer.getLatLngs())
         });
     });
+
+    getRects();
 });
 
 // -------------- REQUESTS ---------------
@@ -116,6 +119,18 @@ function postPenalty(data){
             alert(textStatus.responseText);
             console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
         });
+}
+
+function getRects(){
+
+    $.getJSON(endpoint + '/getrects/').done(function(response) {
+        var json = JSON.parse(response);
+        console.log('Request Done');
+        //drawPolylines(json);
+    }).fail(function(textStatus, error) {
+        alert(textStatus.responseText);
+        console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
+    });
 }
 
 // -------------- HTML ---------------
@@ -141,6 +156,7 @@ function fillData(data){
 
     var lat = [];
     var lng = [];
+    multi = parseInt($('#multiplier').val());
 
     for (i = 0; i < data[0]["length"]; i++) {
         lat.push(data[0][i].lat);
@@ -149,8 +165,14 @@ function fillData(data){
         lng.push(data[0][i].lng);
     }
 
+    if(Number.isNaN(multi) || multi < 1 || typeof multi != 'number' || multi > 10){
+        multi = 2;
+        $('#multiplier').val(2);
+    }
+
     postRect.min_lat = Math.min( ...lat );
     postRect.max_lat = Math.max( ...lat );
     postRect.min_long = Math.min( ...lng );
     postRect.max_long = Math.max( ...lng );
+    postRect.multi = multi;
 }
