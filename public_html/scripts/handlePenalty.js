@@ -2,6 +2,7 @@ console.log("Loading Handle Penalty");
 let data = {};
 let func = ['add', 'del'];
 let multi = 2;
+let rects = {};
 
 var drawControl;
 let penalizedRoutesPolyline = [];
@@ -15,37 +16,7 @@ let postRect = {
     max_long: 0.0
 };
 
-
-
 $(document).ready(function(){
-    // HANDLE ON APPLY PENALTY
-    /*
-	$("#applyPenalty").on("click", function() {
-        perc = parseInt($('#percentage').val());
-        multi = parseInt($('#multiplier').val());
-        console.log(perc);
-        console.log(multi);
-        var ok = true;
-
-        if(Number.isNaN(perc) || perc < 0 || typeof perc != 'number' || perc > 100){
-            alert("Invalid input: 0 <= Percentage <= 100");
-            perc = 0;
-            $('#percentage').val(0);
-            ok = false;
-        }
-        if(Number.isNaN(multi) || multi < 1 || typeof multi != 'number' || multi > 10){
-            alert("Invalid input: 1 <= Multiplier <= 10");
-            multi = 1;
-            $('#multiplier').val(1);
-            ok = false;
-        }
-        if(ok){
-            data.change = 1;
-            data.multi = multi;
-            postPenalty();
-        }
-   	});
-    */
     $("#set").click(function() {
         if(!drawControl) {
             drawControl = new L.Control.Draw({
@@ -70,6 +41,16 @@ $(document).ready(function(){
             drawControl = undefined;
             inSettings = false;
         }
+    });
+
+    $("#defaultGraph").click(function() {
+        map.removeLayer(drawnItems);
+        getRects();
+    });
+
+    $("#sync_rect").click(function() {
+        drawnItems.clearLayers();
+        getRects();
     });
 
     map.on(L.Draw.Event.CREATED, function (e) {
@@ -101,9 +82,7 @@ $(document).ready(function(){
 
 function postPenalty(data){
     $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
-            console.log(response);
-            var json = JSON.parse(response);
-			console.log('Request Done');
+			console.log('Request Done: ' + response);
             //drawPolylines(json);
         }).fail(function(textStatus, error) {
             alert(textStatus.responseText);
@@ -113,10 +92,10 @@ function postPenalty(data){
 
 function getRects(){
     $.getJSON(endpoint + '/getrects/').done(function(response) {
-        var json = response;
+        rects = response;
         console.log('Request Done');
-        console.log(json);
-        //drawPolylines(json);
+        console.log(rects.length);
+        drawRect(rects);
     }).fail(function(textStatus, error) {
         alert(textStatus.responseText);
         console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
@@ -137,6 +116,21 @@ function drawPolylines(json){
             });
         penalizedRoutesPolyline.push(fancyPolyline);
         fancyPolyline.addTo(map);
+    }
+}
+
+function drawRect(json){
+    for(i = 0; i < json.length; i++){
+       var el = json[i];
+       var pol = L.polygon([
+           [el[0], el[1]],
+           [el[0], el[3]],
+           [el[2], el[3]],
+           [el[2], el[1]]
+        ]).setStyle({
+           color: '#eea0be'
+       }).addTo(map);
+       drawnItems.addLayer(pol);
     }
 }
 

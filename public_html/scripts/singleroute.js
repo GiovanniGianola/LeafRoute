@@ -5,10 +5,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }, { 'drawlayer': drawnItems }, { position: 'topleft', collapsed: false }).addTo(map);
 
-map.on(L.Draw.Event.CREATED, function (event) {
-    var layer = event.layer;
-
-    drawnItems.addLayer(layer);
+L.EditToolbar.Delete.include({
+    removeAllLayers: true
 });
 
 let inSettings = false;

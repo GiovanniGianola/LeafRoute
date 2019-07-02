@@ -33,16 +33,23 @@ bool vertexInRect(rectangle rect, float lat, float lon){
 }
 
 bool delElemList(rectangle rect, list<rectangle> &rect_list){
-
     auto itrect = rect_list.begin();
     while(itrect != rect_list.end()){
         if(rect.min_lat == itrect->min_lat && rect.max_lat == itrect->max_lat && rect.min_long == itrect->min_long && rect.max_long == itrect->max_long){
-            rect_list.erase(itrect++);
+            rect_list.erase(itrect);
             return true;
         }
         ++itrect;
     }
     return false;
+}
+
+rectangle findRectInList(rectangle rect, list<rectangle> &rect_list){
+    for(rectangle &elem: rect_list){
+        if (rect.min_lat == elem.min_lat && rect.max_lat == elem.max_lat && rect.min_long == elem.min_long &&  rect.max_long == elem.max_long)
+            return elem;
+    }
+    return fillRect(0.0, 0.0, 0.0, 0.0, 0);
 }
 
 json11::Json getRects(list<rectangle> &rect_list){

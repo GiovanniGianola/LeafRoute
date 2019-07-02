@@ -143,7 +143,10 @@ void RoutesDealer::handle_post(http_request request)
             rect_list.push_back(current_rect);
             response.set_body("Rect penalty applied");
         }else if(function == func[1]){
-            del_penalization_rect(g, g_pen, current_rect);
+            rectangle to_be_deleted_rect = findRectInList(current_rect, rect_list);
+            if(!checkInput(to_be_deleted_rect))
+                send_error(request, "Rect not found.");
+            del_penalization_rect(g_pen, to_be_deleted_rect);
 
             if(delElemList(current_rect, rect_list))
                 response.set_body("Rect penalty removed");
@@ -156,12 +159,6 @@ void RoutesDealer::handle_post(http_request request)
             send_error(request, "Invalid Function.");
         }
         cout << "Rect Count: " << rect_list.size() << endl;
-		/*if(is_pen && perc >= 0) {
-            penalize_edges(g, g_pen = 0, perc, multi);
-            response.set_body("Penalty applied");
-        }else
-            response.set_body("Penalty Removed");*/
-
         request.reply(response);
         cout << endl;
     }

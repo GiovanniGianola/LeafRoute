@@ -44,6 +44,7 @@ struct rectangle {
 rectangle fillRect(float min_lat, float max_lat, float min_long, float max_long, int multi);
 bool checkInput(rectangle rect);
 bool vertexInRect(rectangle rect, float lat, float lon);
+rectangle findRectInList(rectangle rect, list<rectangle> &rect_list);
 bool delElemList(rectangle rect, list<rectangle> &rect_list);
 json11::Json getRects(list<rectangle> &rect_list);
 
@@ -86,7 +87,7 @@ void add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
 }
 
 template <typename Graph>
-void del_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
+void del_penalization_rect(Graph &g_pen, rectangle rect){
     cout << "Add Penalization rect" << endl;
     typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
     typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
