@@ -58,6 +58,8 @@ private:
     bool is_pen;
     KDTree<2, int> tree;
     http_listener m_listener;
+
+    string func[2];
 };
 
 
@@ -69,6 +71,9 @@ RoutesDealer::RoutesDealer(utility::string_t url, Graph &g, KDTree<2, int> &tree
     this->g = g;
     this->tree = tree;
     this->is_pen = false;
+
+    this->func[0] = "add";
+    this->func[1] = "del";
 }
 
 
@@ -79,12 +84,24 @@ void send_error(http_request message, std::string body) {
     message.reply(response);
 }
 
+/* POST struct
+ * let postRect = {
+        multi: 1,
+        function: func[0],
+        min_lat: 0.0,
+        max_lat: 0.0,
+        min_long: 0.0,
+        max_long: 0.0
+ *  };
+ * */
 void RoutesDealer::handle_post(http_request request)
 {
 	cout << "\nHandle POST" << endl;
     
     try {
-		int perc = 0, multi = 1;
+		float min_lat = 0.0, max_lat = 0.0, min_long = 0.0, max_long = 0.0;
+		int multi = 1;
+        string function = "";
 		auto body = request.extract_string().get();
         cout << "body: " << body << endl;
 		map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
@@ -93,22 +110,48 @@ void RoutesDealer::handle_post(http_request request)
         
 		if (myMap.find("change") != myMap.end())
             is_pen = boost::lexical_cast<bool>(myMap["change"]);
-		if (myMap.find("perc") != myMap.end()) {
-			perc = stoi(myMap["perc"]);
-        } else send_error(request, "Percentage not assigned.");
+
+		if (myMap.find("min_lat") != myMap.end()) {
+            min_lat = stof(myMap["min_lat"]);
+        } else send_error(request, "min_lat not assigned.");
+        if (myMap.find("max_lat") != myMap.end()) {
+            max_lat = stof(myMap["max_lat"]);
+        } else send_error(request, "max_lat not assigned.");
+        if (myMap.find("min_long") != myMap.end()) {
+            min_long = stof(myMap["min_long"]);
+        } else send_error(request, "min_long not assigned.");
+        if (myMap.find("max_long") != myMap.end()) {
+            max_long = stof(myMap["max_long"]);
+        } else send_error(request, "max_long not assigned.");
         if (myMap.find("multi") != myMap.end()) {
             multi = stoi(myMap["multi"]);
-        } else send_error(request, "Multiplier not assigned.");
+        } else multi = 2;
+        rectangle current_rect = fillRect(min_lat, max_lat, min_long, max_long, multi);
+        if(!checkInput(current_rect))
+            send_error(request, "Input error.");
+
+        if (myMap.find("function") != myMap.end()) {
+            function = myMap["function"];
+        } else send_error(request, "Function not assigned.");
 
         http_response response(status_codes::OK);
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-		if(is_pen && perc >= 0) {
+
+        if(function == func[0]){
+            add_penalization_rect(g, g_pen, multi, min_lat, max_lat, min_long, max_long);
+            is_pen = true;
+            response.set_body("Rect penalty applied");
+        }else if(function == func[1]){
+            del_penalization_rect(g, g_pen, min_lat, max_lat, min_long, max_long);
+            response.set_body("Rect penalty removed");
+        }else{
+            send_error(request, "Invalid Function.");
+        }
+		/*if(is_pen && perc >= 0) {
             penalize_edges(g, g_pen = 0, perc, multi);
             response.set_body("Penalty applied");
         }else
-            response.set_body("Penalty Removed");
-
-
+            response.set_body("Penalty Removed");*/
 
         request.reply(response);
         cout << endl;
@@ -165,7 +208,7 @@ void RoutesDealer::handle_get(http_request request)
         }
         
         Graph g_tmp;
-        if(is_pen) {
+        if(is_pen && boost::num_vertices(g_pen) > 0) {
             cout << "Using modified Graph" << endl;
             copy_graph(g_pen, g_tmp);
         }else {
