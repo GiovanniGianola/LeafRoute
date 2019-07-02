@@ -111,8 +111,7 @@ function postPenalty(data){
     $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
             var json = JSON.parse(response);
 			console.log('Request Done');
-			console.log(json);
-            drawPolylines(json);
+            //drawPolylines(json);
         }).fail(function(textStatus, error) {
             alert(textStatus.responseText);
             console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
