@@ -5,7 +5,7 @@ let func = ['add', 'del'];
 var drawControl;
 
 let postRect = {
-    multi: 1,
+    multi: 2,
     function: func[0],
     min_lat: 0.0,
     max_lat: 0.0,
@@ -17,6 +17,7 @@ let postRect = {
 
 $(document).ready(function(){
     // HANDLE ON APPLY PENALTY
+    /*
 	$("#applyPenalty").on("click", function() {
         perc = parseInt($('#percentage').val());
         multi = parseInt($('#multiplier').val());
@@ -38,12 +39,11 @@ $(document).ready(function(){
         }
         if(ok){
             data.change = 1;
-            data.perc = perc;
             data.multi = multi;
             postPenalty();
         }
    	});
-
+    */
     $("#set").click(function() {
         if(!drawControl) {
             drawControl = new L.Control.Draw({
@@ -75,14 +75,25 @@ $(document).ready(function(){
         var layer = e.layer;
         drawnItems.addLayer(layer);
         data = layer.getLatLngs();
+
+        fillData(data);
+        postRect.function = func[0];
+        postPenalty(postRect);
+
         console.log('OnCreated');
-        console.log(layer.getLatLngs())
+        console.log(layer.getLatLngs());
 
     });
 
     map.on('draw:deleted', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
+
+            data = layer.getLatLngs();
+            fillData(data);
+            postRect.function = func[1];
+            postPenalty(postRect);
+
             console.log('OnRemove');
             console.log(layer.getLatLngs())
         });
@@ -95,11 +106,30 @@ function postPenalty(data){
     
 	console.log(endpoint);
 	console.log(data);
-    
+
     $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
 			console.log('Request Done: ' + response);
         }).fail(function(textStatus, error) {
             alert(textStatus.responseText);
             console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
         });
+}
+
+function fillData(data){
+
+    var lat = [];
+    var lng = [];
+
+    for (i = 0; i < data[0]["length"]; i++) {
+        lat.push(data[0][i].lat);
+    }
+    for(i=0; i<data[0]["length"]; i++) {
+        lng.push(data[0][i].lng);
+    }
+
+    postRect.min_lat = Math.min( ...lat );
+    postRect.max_lat = Math.max( ...lat );
+    postRect.min_long = Math.min( ...lng );
+    postRect.max_long = Math.max( ...lng );
+
 }
