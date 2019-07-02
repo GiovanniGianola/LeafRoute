@@ -138,10 +138,10 @@ void RoutesDealer::handle_post(http_request request)
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
         if(function == func[0]){
-            auto penalized_paths = add_penalization_rect(g, g_pen, current_rect);
+            add_penalization_rect(g, g_pen, current_rect);
             is_pen = true;
             rect_list.push_back(current_rect);
-            response.set_body(penalized_paths.dump());
+            response.set_body("Rect penalty applied");
         }else if(function == func[1]){
             del_penalization_rect(g, g_pen, current_rect);
 

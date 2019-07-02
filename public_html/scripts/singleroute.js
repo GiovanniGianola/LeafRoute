@@ -281,8 +281,7 @@ $('#search').click(function(e){
 	}
     $.getJSON( endpoint + '/getroutes/', data )
         .done(function( json ) {
-            console.log(json);
-			console.log(data);
+
             let endTime = new Date().getTime();
             stats.times.push({
                 s_lat: sourcePlace[0],
@@ -297,7 +296,7 @@ $('#search').click(function(e){
             console.log('Response length: ' + json.length);
             for (let i = json.length-1; i >= 0; i--){
                 path = json[i];
-                console.log(path);
+                console.log(typeof path);
                 fancyPolyline = strokePolyline(
                     path,
                     {

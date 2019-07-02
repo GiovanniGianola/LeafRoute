@@ -48,7 +48,7 @@ bool delElemList(rectangle rect, list<rectangle> &rect_list);
 json11::Json getRects(list<rectangle> &rect_list);
 
 template <typename Graph>
-json11::Json add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
+void add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
     cout << "Add Penalization rect" << endl;
     typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
     typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
@@ -57,8 +57,6 @@ json11::Json add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
 
     if(boost::num_vertices(g_pen) == 0)
         copy_graph(g, g_pen);
-
-    vector<json11::Json> penalized_path;
 
     int count_edges = 0;
     IndexMap index = get(boost::vertex_index, g_pen);
@@ -80,24 +78,11 @@ json11::Json add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
             //float new_weight = get(boost::edge_weight_t(), g_pen, ed.first);
             //cout << ", new Weight: " << new_weight << endl;
 
-            //fill json
-            vector<json11::Json::array> json_arr;
-            auto start = json11::Json::array {source_lat, source_lon,0};
-            auto end = json11::Json::array {
-                target_lat, target_lon,get(boost::edge_weight_t(), g_pen, ed.first)
-            };
-
-            json_arr.push_back(start);
-            json_arr.push_back(end);
-            penalized_path.push_back(json_arr);
-
             count_edges++;
         }
     }
     cout << "Multiplier: " << rect.multi << endl;
     cout << "Penalized edges count: " << count_edges << endl;
-
-    return penalized_path;
 }
 
 template <typename Graph>
