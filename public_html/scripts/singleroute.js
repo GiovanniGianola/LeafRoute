@@ -5,11 +5,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }, { 'drawlayer': drawnItems }, { position: 'topleft', collapsed: false }).addTo(map);
 
-L.EditToolbar.Delete.include({
-    removeAllLayers: true
-});
+
 
 let inSettings = false;
+
 // create the sidebar instance and add it to the map
 var sidebar = L.control.sidebar({ container: 'sidebar' })
 .addTo(map)

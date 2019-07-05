@@ -12,6 +12,16 @@ rectangle fillRect(float min_lat, float max_lat, float min_long, float max_long,
     return tmp;
 }
 
+void addRectToList(rectangle rect, list<rectangle> &rect_list){
+    int new_rect_id = 0;
+    for(rectangle &elem: rect_list){
+        if(elem.id > new_rect_id)
+            new_rect_id = elem.id;
+    }
+    rect.id = new_rect_id + 1;
+    rect_list.push_back(rect);
+}
+
 // Check POST request input values
 bool checkInput(rectangle rect){
     if(rect.min_lat == 0.0 || rect.max_lat == 0.0 || rect.min_long == 0.0 || rect.max_long == 0.0)
@@ -35,7 +45,10 @@ bool vertexInRect(rectangle rect, float lat, float lon){
 bool delElemList(rectangle rect, list<rectangle> &rect_list){
     auto itrect = rect_list.begin();
     while(itrect != rect_list.end()){
-        if(rect.min_lat == itrect->min_lat && rect.max_lat == itrect->max_lat && rect.min_long == itrect->min_long && rect.max_long == itrect->max_long){
+        if(rect.min_lat == itrect->min_lat
+            && rect.max_lat == itrect->max_lat
+            && rect.min_long == itrect->min_long
+            && rect.max_long == itrect->max_long){
             rect_list.erase(itrect);
             return true;
         }
@@ -46,7 +59,10 @@ bool delElemList(rectangle rect, list<rectangle> &rect_list){
 
 rectangle findRectInList(rectangle rect, list<rectangle> &rect_list){
     for(rectangle &elem: rect_list){
-        if (rect.min_lat == elem.min_lat && rect.max_lat == elem.max_lat && rect.min_long == elem.min_long &&  rect.max_long == elem.max_long)
+        if(rect.min_lat == elem.min_lat
+            && rect.max_lat == elem.max_lat
+            && rect.min_long == elem.min_long
+            && rect.max_long == elem.max_long)
             return elem;
     }
     return fillRect(0.0, 0.0, 0.0, 0.0, 0);
@@ -54,11 +70,11 @@ rectangle findRectInList(rectangle rect, list<rectangle> &rect_list){
 
 json11::Json getRects(list<rectangle> &rect_list){
     vector<json11::Json> jsonRects;
-
     auto itrect = rect_list.begin();
     while(itrect != rect_list.end()){
+        cout << itrect->toString() << endl;
         auto rect = json11::Json::array {
-                itrect->min_lat, itrect->min_long, itrect->max_lat, itrect->max_long
+                itrect->id, itrect->multi, itrect->min_lat, itrect->min_long, itrect->max_lat, itrect->max_long
         };
         jsonRects.push_back(rect);
         ++itrect;

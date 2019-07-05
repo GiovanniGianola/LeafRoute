@@ -26,6 +26,7 @@
 
 // Rect Struct
 struct rectangle {
+    int id;
     float min_lat;
     float max_lat;
     float min_long;
@@ -33,15 +34,29 @@ struct rectangle {
     int multi;
 
     // Assignment operator.
-    bool operator ==(const rectangle& st)
-    {
-        return min_lat == st.min_lat && max_lat == st.max_lat && min_long == st.min_long && min_long == st.max_lat;
+    bool operator ==(const rectangle& st){
+        return min_lat == st.min_lat
+        && max_lat == st.max_lat
+        && min_long == st.min_long
+        && min_long == st.max_lat
+        && id == st.id;
+    }
+
+    // ToString Method
+    string toString(){
+        std::string ts = "id: " + to_string(id) + ", multi = " + to_string(multi)
+                + ", min_lat = " + to_string(min_lat)
+                + ", max_lat = " + to_string(max_lat)
+                + ", min_long = " + to_string(min_long)
+                + ", max_long = " + to_string(max_long);
+        return ts;
     }
 };
 // Rect List
 
 
 rectangle fillRect(float min_lat, float max_lat, float min_long, float max_long, int multi);
+void addRectToList(rectangle rect, list<rectangle> &rect_list);
 bool checkInput(rectangle rect);
 bool vertexInRect(rectangle rect, float lat, float lon);
 rectangle findRectInList(rectangle rect, list<rectangle> &rect_list);
@@ -88,7 +103,7 @@ void add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
 
 template <typename Graph>
 void del_penalization_rect(Graph &g_pen, rectangle rect){
-    cout << "Add Penalization rect" << endl;
+    cout << "Remove Penalization rect" << endl;
     typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
     typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
     typename boost::graph_traits<Graph>::edge_iterator ei, ei_end;
@@ -113,7 +128,7 @@ void del_penalization_rect(Graph &g_pen, rectangle rect){
             count_edges++;
         }
     }
-    cout << "Multiplier: " << rect.multi << endl;
+    cout << "De-Multiplier: " << rect.multi << endl;
     cout << "De-Penalized edges count: " << count_edges << endl;
 }
 #endif //MAIN_ROUTESPENALIZER_H

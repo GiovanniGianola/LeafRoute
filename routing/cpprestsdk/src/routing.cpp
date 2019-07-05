@@ -105,11 +105,6 @@ void RoutesDealer::handle_post(http_request request)
 		auto body = request.extract_string().get();
         cout << "body: " << body << endl;
 		map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
-		//for(auto const& p: myMap)
-        //	std::cout << '{' << p.first << " => " << p.second << '}' << '\n';
-        
-		if (myMap.find("change") != myMap.end())
-            is_pen = boost::lexical_cast<bool>(myMap["change"]);
 
 		if (myMap.find("min_lat") != myMap.end()) {
             min_lat = stof(myMap["min_lat"]);
@@ -140,7 +135,7 @@ void RoutesDealer::handle_post(http_request request)
         if(function == func[0]){
             add_penalization_rect(g, g_pen, current_rect);
             is_pen = true;
-            rect_list.push_back(current_rect);
+            addRectToList(current_rect, rect_list);
             response.set_body("Rect penalty applied");
         }else if(function == func[1]){
             rectangle to_be_deleted_rect = findRectInList(current_rect, rect_list);

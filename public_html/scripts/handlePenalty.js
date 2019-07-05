@@ -2,12 +2,13 @@ console.log("Loading Handle Penalty");
 let data = {};
 let func = ['add', 'del'];
 let multi = 2;
-let rects = {};
+let penaltiesJson = {};
 
 var drawControl;
 let penalizedRoutesPolyline = [];
 
 let postRect = {
+    id: 0,
     multi: 2,
     function: func[0],
     min_lat: 0.0,
@@ -17,6 +18,9 @@ let postRect = {
 };
 
 $(document).ready(function(){
+    L.EditToolbar.Delete.include({
+        removeAllLayers: true
+    });
     $("#set").click(function() {
         if(!drawControl) {
             drawControl = new L.Control.Draw({
@@ -24,11 +28,17 @@ $(document).ready(function(){
                     polygon: false,
                     polyline: false,
                     marker: false,
-                    circle: false
+                    circle: false,
+                    rectangle:{
+                        color: 'red'
+                    }
                 },
                 edit: {
                     featureGroup: drawnItems,
-                    edit: false
+                    edit: false,
+                    delete: {
+                        removeAllLayers: true
+                    }
                 }
             });
             map.addControl(drawControl);
@@ -44,8 +54,15 @@ $(document).ready(function(){
     });
 
     $("#defaultGraph").click(function() {
-        map.removeLayer(drawnItems);
-        getRects();
+        if(map.hasLayer(drawnItems)){
+            drawnItems.eachLayer(function(l){
+                    data = l.getLatLngs();
+                    fillData(data);
+                    postRect.function = func[1];
+                    postPenalty(postRect);
+                    drawnItems.removeLayer(l);
+                });
+        }
     });
 
     $("#sync_rect").click(function() {
@@ -54,11 +71,9 @@ $(document).ready(function(){
     });
 
     map.on(L.Draw.Event.CREATED, function (e) {
-
         var layer = e.layer;
         drawnItems.addLayer(layer);
         data = layer.getLatLngs();
-
         fillData(data);
         postRect.function = func[0];
         postPenalty(postRect);
@@ -67,7 +82,6 @@ $(document).ready(function(){
     map.on('draw:deleted', function (e) {
         var layers = e.layers;
         layers.eachLayer(function (layer) {
-
             data = layer.getLatLngs();
             fillData(data);
             postRect.function = func[1];
@@ -84,6 +98,8 @@ function postPenalty(data){
     $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
 			console.log('Request Done: ' + response);
             //drawPolylines(json);
+            drawnItems.clearLayers();
+            getRects();
         }).fail(function(textStatus, error) {
             alert(textStatus.responseText);
             console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
@@ -92,10 +108,10 @@ function postPenalty(data){
 
 function getRects(){
     $.getJSON(endpoint + '/getrects/').done(function(response) {
-        rects = response;
+        penaltiesJson = response;
         console.log('Request Done');
-        console.log(rects.length);
-        drawRect(rects);
+        drawRect(penaltiesJson);
+        addPenaltyInfoPanel(penaltiesJson);
     }).fail(function(textStatus, error) {
         alert(textStatus.responseText);
         console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
@@ -119,41 +135,55 @@ function drawPolylines(json){
     }
 }
 
-function drawRect(json){
-    for(i = 0; i < json.length; i++){
-       var el = json[i];
-       var pol = L.polygon([
-           [el[0], el[1]],
-           [el[0], el[3]],
-           [el[2], el[3]],
-           [el[2], el[1]]
+function drawRect(penaltiesJson){
+    for(let i = 0; i < penaltiesJson.length; i++){
+        let el = penaltiesJson[i];
+        let pol = L.polygon([
+            [el[2], el[3]],
+            [el[2], el[5]],
+            [el[4], el[5]],
+            [el[4], el[3]]
         ]).setStyle({
-           color: '#eea0be'
-       }).addTo(map);
-       drawnItems.addLayer(pol);
+            color: '#e98fb3'
+        }).addTo(map);
+        drawnItems.addLayer(pol);
     }
+}
+
+function addPenaltyInfoPanel(penaltiesJson){
+    let htmlInfoPanel = ``;
+    for(let i = 0; i < penaltiesJson.length; i++){
+        let el = penaltiesJson[i];
+        htmlInfoPanel += `
+                            <div class="flex-container-info secondary-option col-12">
+                                <p style="margin-top: 15px">Id: ${el[0]}</p>
+                                <p style="margin-top: 15px">Multi: ${el[1]}</p>
+                                <p style="margin-top: 15px">(${el[2].toFixed(3)},</p>
+                                <p style="margin-top: 15px">${el[3].toFixed(3)})</p>
+                                <p style="margin-top: 15px">(${el[4].toFixed(3)},</p>
+                                <p style="margin-top: 15px">${el[5].toFixed(3)})</p>
+                            </div>
+                        `
+    }
+    $('#penalties-panel').html(htmlInfoPanel);
 }
 
 // -------------- AUXILIARY FUNCTIONS ---------------
 
 function fillData(data){
 
-    var lat = [];
-    var lng = [];
+    let lat = [];
+    let lng = [];
     multi = parseInt($('#multiplier').val());
 
-    for (i = 0; i < data[0]["length"]; i++) {
+    for(let i = 0; i < data[0]["length"]; i++){
         lat.push(data[0][i].lat);
-    }
-    for(i=0; i<data[0]["length"]; i++) {
         lng.push(data[0][i].lng);
     }
-
     if(Number.isNaN(multi) || multi < 1 || typeof multi != 'number' || multi > 10){
         multi = 2;
         $('#multiplier').val(2);
     }
-
     postRect.min_lat = Math.min( ...lat );
     postRect.max_lat = Math.max( ...lat );
     postRect.min_long = Math.min( ...lng );
