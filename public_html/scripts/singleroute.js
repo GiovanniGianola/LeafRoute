@@ -276,7 +276,7 @@ $('#search').click(function(e){
         n_routes: 3,
         reroute: false
 	}
-    $.getJSON( endpoint + '/getroutes/', data )
+    $.getJSON( endpoint + '/getroutes', data )
         .done(function( json ) {
 
             let endTime = new Date().getTime();

@@ -95,8 +95,7 @@ void send_error(http_request message, std::string body) {
         max_long: 0.0
  *  };
  * */
-void RoutesDealer::handle_post(http_request request)
-{
+void RoutesDealer::handle_post(http_request request){
 	cout << "\nHandle POST" << endl;
     try {
 		float min_lat = 0.0, max_lat = 0.0, min_long = 0.0, max_long = 0.0;
@@ -167,8 +166,7 @@ void RoutesDealer::handle_post(http_request request)
     }
 }
 
-void RoutesDealer::handle_get(http_request request)
-{
+void RoutesDealer::handle_get(http_request request){
 	cout << "\nHandle GET" << endl;
 	
     try {
@@ -229,6 +227,9 @@ void RoutesDealer::handle_get(http_request request)
             }
 
             auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
+
+            cout << "Export Graph" << endl;
+            export_graph(g_tmp);
 
             http_response response(status_codes::OK);
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));

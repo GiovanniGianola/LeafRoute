@@ -131,4 +131,52 @@ void del_penalization_rect(Graph &g_pen, rectangle rect){
     cout << "De-Multiplier: " << rect.multi << endl;
     cout << "De-Penalized edges count: " << count_edges << endl;
 }
+
+template <typename Graph>
+void export_graph(Graph &g_pen){
+    cout << "Exporting graph" << endl;
+
+    /*std::cout << "iterate over vertices, then over its neighbors\n";
+    auto vs = boost::vertices(g_pen);
+    for (auto vit = vs.first; vit != vs.second; ++vit) {
+        auto neighbors = boost::adjacent_vertices(*vit, g_pen);
+        for (auto nit = neighbors.first; nit != neighbors.second; ++nit)
+            std::cout << *vit << ' ' << *nit << std::endl;
+    }*/
+    typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
+    typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
+    typename boost::graph_traits<Graph>::edge_iterator ei, ei_end;
+    typename Graph::vertex_iterator v, vend;
+
+    if(boost::num_vertices(g_pen) == 0)
+        return;
+
+    int count_edges = 0;
+    int count_vertices = 0;
+    std::cout << "iterate directly over edges\n";
+    IndexMap index = get(boost::vertex_index, g_pen);
+    auto current_node = -1;
+    for (boost::tie(ei, ei_end) = edges(g_pen); ei != ei_end; ++ei) {
+        std::pair<Edge, bool> ed = boost::edge(index[source(*ei, g_pen)], index[target(*ei, g_pen)], g_pen);
+
+        float source_lat = g_pen[source(*ei, g_pen)].lat;
+        float source_lon = g_pen[source(*ei, g_pen)].lon;
+
+        float w = get(boost::edge_weight_t(), g_pen, ed.first);
+
+
+        cout << source(*ei, g_pen) << ' ' << target(*ei, g_pen) << ' ' << w << ' ';
+        count_edges++;
+        if(current_node != source(*ei, g_pen)) {
+            cout <<" - " << source_lon << ' ' << source_lat << endl;
+            count_vertices++;
+            current_node = source(*ei, g_pen);
+        }else{
+            cout << endl;
+        }
+
+    }
+    cout << "count_edges: " << count_edges << endl;
+    cout << "count_vertices: " << count_vertices << endl;
+}
 #endif //MAIN_ROUTESPENALIZER_H

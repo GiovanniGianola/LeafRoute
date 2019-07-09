@@ -95,19 +95,60 @@ $(document).ready(function(){
 // -------------- REQUESTS ---------------
 
 function postPenalty(data){
-    $.post(endpoint + '/postpenalty/', data, 'json').done(function(response) {
-			console.log('Request Done: ' + response);
+    /*$.ajax({
+        method: "POST",
+        type: "POST",
+        url: endpoint + '/postpenalty/',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        dataType: "json",
+        data: data,
+        crossDomain: true,
+        success: function (response) {
+            console.log('Request Done: ' + response);
             //drawPolylines(json);
             drawnItems.clearLayers();
             getRects();
-        }).fail(function(textStatus, error) {
+        },
+        error: function (textStatus, error) {
             alert(textStatus.responseText);
-            console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
-        });
+            console.log('Request Failed: ' + error + ', ' + textStatus.status);
+        }
+    });*/
+
+    $.post(endpoint + '/postpenalty', data).done(function(response) {
+        console.log('Request Done: ' + response);
+        //drawPolylines(json);
+        drawnItems.clearLayers();
+        getRects();
+    }).fail(function(textStatus, error) {
+        let stringError = textStatus.status + ' ' + textStatus.statusText + ': ' + textStatus.responseText;
+        console.log('Request failed | ' + textStatus);
+        alert(stringError);
+    });
+
+    /*fetch(endpoint + '/postpenalty', {
+        body: data,
+        headers: {'Content-type': 'application/json'},
+        method: "post",
+    }).then(function(response) {
+        return response.json();
+    }).then(function(json) {
+        if(json.error){
+            alert(textStatus.responseText);
+            console.log('Request Failed: ' + error + ', ' + textStatus.status);
+        }else{
+            console.log('Request Done: ' + response);
+            //drawPolylines(json);
+            drawnItems.clearLayers();
+            getRects();
+        }
+    });*/
 }
 
 function getRects(){
-    $.getJSON(endpoint + '/getrects/').done(function(response) {
+    $.getJSON(endpoint + '/getrects').done(function(response) {
         penaltiesJson = response;
         console.log('Request Done');
         drawRect(penaltiesJson);
