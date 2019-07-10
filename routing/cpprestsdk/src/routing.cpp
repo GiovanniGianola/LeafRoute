@@ -228,7 +228,6 @@ void RoutesDealer::handle_get(http_request request){
 
             auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
 
-            cout << "Export Graph" << endl;
             export_graph(g_tmp);
 
             http_response response(status_codes::OK);

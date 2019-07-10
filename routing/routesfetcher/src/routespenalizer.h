@@ -23,6 +23,31 @@
 #include <chrono>
 #include "utils.hpp"
 #include <filesystem>
+#include <stdio.h>
+#include <stdlib.h>
+#include <boost/archive/text_oarchive.hpp>
+#include <sstream>
+#include <boost/archive/text_iarchive.hpp>
+
+#define LAMBDA_PACK "\
+    #/bin/bash \n\
+    cd .. \n\
+    make aws-lambda-package-lambda \n\
+    clear\
+    "
+
+#define LOAD_GRAPH "\
+    #/bin/bash \n\
+    zip -m ../lambda/lambda.zip data.btl \n\
+    clear\
+    "
+
+#define UPLOAD_FUNCTION_AWS "\
+    #/bin/bash \n\
+    aws lambda update-function-code --function-name leafroute --zip-file fileb://../lambda/lambda.zip \n\
+    clear\
+    "
+
 
 // Rect Struct
 struct rectangle {
@@ -32,7 +57,6 @@ struct rectangle {
     float min_long;
     float max_long;
     int multi;
-
     // Assignment operator.
     bool operator ==(const rectangle& st){
         return min_lat == st.min_lat
@@ -41,7 +65,6 @@ struct rectangle {
         && min_long == st.max_lat
         && id == st.id;
     }
-
     // ToString Method
     string toString(){
         std::string ts = "id: " + to_string(id) + ", multi = " + to_string(multi)
@@ -52,8 +75,6 @@ struct rectangle {
         return ts;
     }
 };
-// Rect List
-
 
 rectangle fillRect(float min_lat, float max_lat, float min_long, float max_long, int multi);
 void addRectToList(rectangle rect, list<rectangle> &rect_list);
@@ -86,14 +107,7 @@ void add_penalization_rect(Graph &g, Graph &g_pen, rectangle rect){
         float target_lon = g_pen[target(*ei, g_pen)].lon;
 
         if(vertexInRect(rect, source_lat, source_lon) || vertexInRect(rect, target_lat, target_lon)){
-            //float weight = get(boost::edge_weight_t(), g_pen, ed.first);
-            //cout << "source_lat: " << source_lat << " source_lon: " << source_lon;
-            //cout << " target_lat: " << target_lat << " target_lon: " << target_lon;
-            //cout << " Weight: " << weight;
             get(boost::edge_weight_t(), g_pen, ed.first) *= rect.multi;
-            //float new_weight = get(boost::edge_weight_t(), g_pen, ed.first);
-            //cout << ", new Weight: " << new_weight << endl;
-
             count_edges++;
         }
     }
@@ -133,50 +147,29 @@ void del_penalization_rect(Graph &g_pen, rectangle rect){
 }
 
 template <typename Graph>
-void export_graph(Graph &g_pen){
-    cout << "Exporting graph" << endl;
-
-    /*std::cout << "iterate over vertices, then over its neighbors\n";
-    auto vs = boost::vertices(g_pen);
-    for (auto vit = vs.first; vit != vs.second; ++vit) {
-        auto neighbors = boost::adjacent_vertices(*vit, g_pen);
-        for (auto nit = neighbors.first; nit != neighbors.second; ++nit)
-            std::cout << *vit << ' ' << *nit << std::endl;
-    }*/
-    typedef typename boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
-    typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
-    typename boost::graph_traits<Graph>::edge_iterator ei, ei_end;
-    typename Graph::vertex_iterator v, vend;
-
+bool export_graph(Graph &g_pen){
     if(boost::num_vertices(g_pen) == 0)
-        return;
+        return false;
 
-    int count_edges = 0;
-    int count_vertices = 0;
-    std::cout << "iterate directly over edges\n";
-    IndexMap index = get(boost::vertex_index, g_pen);
-    auto current_node = -1;
-    for (boost::tie(ei, ei_end) = edges(g_pen); ei != ei_end; ++ei) {
-        std::pair<Edge, bool> ed = boost::edge(index[source(*ei, g_pen)], index[target(*ei, g_pen)], g_pen);
-
-        float source_lat = g_pen[source(*ei, g_pen)].lat;
-        float source_lon = g_pen[source(*ei, g_pen)].lon;
-
-        float w = get(boost::edge_weight_t(), g_pen, ed.first);
-
-
-        cout << source(*ei, g_pen) << ' ' << target(*ei, g_pen) << ' ' << w << ' ';
-        count_edges++;
-        if(current_node != source(*ei, g_pen)) {
-            cout <<" - " << source_lon << ' ' << source_lat << endl;
-            count_vertices++;
-            current_node = source(*ei, g_pen);
-        }else{
-            cout << endl;
-        }
-
+    // Export Graph in data.btl
+    cout << "(1) Exporting Graph in data.btl..." << endl;
+    std::ofstream oss("data.btl");{
+        boost::archive::text_oarchive oa(oss);
+        oa << g_pen;
     }
-    cout << "count_edges: " << count_edges << endl;
-    cout << "count_vertices: " << count_vertices << endl;
+
+    // Generate lambda.zip
+    cout << "(2) Generating lambda.zip..." << endl;
+    system(LAMBDA_PACK);
+
+    // Load data.btl into lambda.zip
+    cout << "(3) Loading data.btl into lambda.zip..." << endl;
+    system(LOAD_GRAPH);
+
+    // Upload Lambda.zip on AWS
+    cout << "(4) Uploading Lambda.zip on AWS..." << endl;
+    system(UPLOAD_FUNCTION_AWS);
+
+    return true;
 }
 #endif //MAIN_ROUTESPENALIZER_H
