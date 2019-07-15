@@ -32,6 +32,9 @@
                 <li>
                     <a id="set" href="#settings" role="tab" title="Settings"><i class="fas fa-cog"></i></a>
                 </li>
+                <li>
+                    <a href="singleroute.html" id="client" href="#client" role="tab" title="Client" target="_blank"><i class="fas fa-user"></i></a>
+                </li>
             </ul>
 
             <!-- bottom aligned tabs -->
@@ -85,11 +88,6 @@
                     <label for="endpoint" style="font-size: 14pt; margin-top: .5rem;">Endpoint</label>
                     <div style="width:90%;">
                         <input type="text" id="endpoint" class="form-control" placeholder="Endpoint" aria-label="Endpoint">
-                        <!--<select class="custom-select row" id="selectEndpoint">
-                            <option value="0">Aws Lambda</option>
-                            <option value="1">Localhost</option>
-                            <option value="2">Custom</option>
-                        </select>-->
                     </div>
                     <div style="width:10%;">
                         <button type="button" class="btn btn-outline-primary" id="setEndpoint" onclick="updateEndpoint()">
@@ -104,13 +102,9 @@
                     <!--<input type="number" max="100" min="0" class="form-control" id="percentage" placeholder="Penalty Percentage" style="width: 50%">-->
                     <input type="number" max="10" min="1" class="form-control" id="multiplier" placeholder="Penalty Multiplier" style="width: 50%; margin-right: 10px">
                     <button type="button" class="btn btn-primary" id="defaultGraph" style="margin-right: 10px">Default Graph</button>
-                    <button type="button" class="btn btn-primary" id="sync_rect"> <a id="" href="#home" role="tab"><i class="fas fa-sync" style="color: white;"></i></a></button>
+                    <button type="button" class="btn btn-primary" id="sync_rect" style="margin-right: 10px"> <a id="" href="#home" role="tab"><i class="fas fa-sync" style="color: white;"></i></a></button>
+                    <button type="button" class="btn btn-outline-primary" id="uploadGraph" style="margin-top: 10px"><span>Upload Graph</span></button>
                 </div>
-                <!--
-                <div class="row">
-                    <button type="button" class="btn btn-primary mr-2" id="applyPenalty">Apply Penalty</button>
-
-                </div>-->
                 <label class="row" style="font-size: 14pt; margin-top: .5rem;">Extra</label>
                 <div class="row">
                     <button type="button" class="btn btn-outline-primary" id="dumpStats">
@@ -144,6 +138,7 @@
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
             integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
             crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
     <script src="scripts/typeahead.bundle.js"></script>
     <script src="scripts/typeahead-address-photon.js"></script>
     <script src="scripts/leaflet-sidebar.js"></script>

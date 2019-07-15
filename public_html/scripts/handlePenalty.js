@@ -4,8 +4,7 @@ let func = ['add', 'del'];
 let multi = 2;
 let penaltiesJson = {};
 
-var drawControl;
-let penalizedRoutesPolyline = [];
+let drawControl;
 
 let postRect = {
     id: 0,
@@ -65,13 +64,18 @@ $(document).ready(function(){
         }
     });
 
+    $("#uploadGraph").click(function() {
+        postGraph();
+        $(this).addClass('button_loading').prop('disabled', true);
+    });
+
     $("#sync_rect").click(function() {
         drawnItems.clearLayers();
         getRects();
     });
 
     map.on(L.Draw.Event.CREATED, function (e) {
-        var layer = e.layer;
+        let layer = e.layer;
         drawnItems.addLayer(layer);
         data = layer.getLatLngs();
         fillData(data);
@@ -80,7 +84,7 @@ $(document).ready(function(){
     });
 
     map.on('draw:deleted', function (e) {
-        var layers = e.layers;
+        let layers = e.layers;
         layers.eachLayer(function (layer) {
             data = layer.getLatLngs();
             fillData(data);
@@ -95,86 +99,43 @@ $(document).ready(function(){
 // -------------- REQUESTS ---------------
 
 function postPenalty(data){
-    /*$.ajax({
-        method: "POST",
-        type: "POST",
-        url: endpoint + '/postpenalty/',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        dataType: "json",
-        data: data,
-        crossDomain: true,
-        success: function (response) {
-            console.log('Request Done: ' + response);
-            //drawPolylines(json);
-            drawnItems.clearLayers();
-            getRects();
-        },
-        error: function (textStatus, error) {
-            alert(textStatus.responseText);
-            console.log('Request Failed: ' + error + ', ' + textStatus.status);
-        }
-    });*/
-
     $.post(endpoint + '/postpenalty', data).done(function(response) {
-        console.log('Request Done: ' + response);
-        //drawPolylines(json);
+        console.log('/postpenalty Request Done: ' + response);
         drawnItems.clearLayers();
         getRects();
     }).fail(function(textStatus, error) {
         let stringError = textStatus.status + ' ' + textStatus.statusText + ': ' + textStatus.responseText;
-        console.log('Request failed | ' + textStatus);
+        console.log('/postpenalty Request failed | ' + textStatus);
         alert(stringError);
     });
-
-    /*fetch(endpoint + '/postpenalty', {
-        body: data,
-        headers: {'Content-type': 'application/json'},
-        method: "post",
-    }).then(function(response) {
-        return response.json();
-    }).then(function(json) {
-        if(json.error){
-            alert(textStatus.responseText);
-            console.log('Request Failed: ' + error + ', ' + textStatus.status);
-        }else{
-            console.log('Request Done: ' + response);
-            //drawPolylines(json);
-            drawnItems.clearLayers();
-            getRects();
-        }
-    });*/
 }
 
 function getRects(){
     $.getJSON(endpoint + '/getrects').done(function(response) {
         penaltiesJson = response;
-        console.log('Request Done');
+        console.log('/getrects Request Done');
         drawRect(penaltiesJson);
         addPenaltyInfoPanel(penaltiesJson);
     }).fail(function(textStatus, error) {
         alert(textStatus.responseText);
-        console.log('Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
+        console.log('/getrects Request Failed: ' + textStatus.responseText + ', ' + textStatus.status);
+    });
+}
+
+function postGraph(){
+    $.post(endpoint + '/postgraph', {}).done(function(response) {
+        console.log('/postgraph Request Done: ' + response);
+        $("#uploadGraph").removeClass('button_loading').prop('disabled', false);
+
+    }).fail(function(textStatus, error) {
+        let stringError = textStatus.status + ' ' + textStatus.statusText + ': ' + textStatus.responseText;
+        console.log(' /postgraph Request failed | ' + textStatus);
+        alert(stringError);
+        $("#uploadGraph").removeClass('button_loading').prop('disabled', false);
     });
 }
 
 // -------------- HTML ---------------
-
-function drawPolylines(json){
-    var c_path = {};
-    for (let i = json.length-1; i >= 0; i--){
-        c_path = json[i];
-        fancyPolyline = strokePolyline(
-            c_path,
-            {
-                ...routeColors[i===0 ? 0 : 1],
-                groupId: i
-            });
-        penalizedRoutesPolyline.push(fancyPolyline);
-        fancyPolyline.addTo(map);
-    }
-}
 
 function drawRect(penaltiesJson){
     for(let i = 0; i < penaltiesJson.length; i++){

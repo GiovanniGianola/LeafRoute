@@ -98,63 +98,87 @@ void send_error(http_request message, std::string body) {
 void RoutesDealer::handle_post(http_request request){
 	cout << "\nHandle POST" << endl;
     try {
-		float min_lat = 0.0, max_lat = 0.0, min_long = 0.0, max_long = 0.0;
-		int multi = 1;
-        string function = "";
-		auto body = request.extract_string().get();
-        cout << "body: " << body << endl;
-		map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
+        auto url = uri::decode(request.request_uri().to_string());
+        auto url_message= uri::decode(request.relative_uri().to_string());
+        cout << "Url: " << url << endl;
+        cout << "Url_message: " << url_message << endl;
 
-		if (myMap.find("min_lat") != myMap.end()) {
-            min_lat = stof(myMap["min_lat"]);
-        } else send_error(request, "min_lat not assigned.");
-        if (myMap.find("max_lat") != myMap.end()) {
-            max_lat = stof(myMap["max_lat"]);
-        } else send_error(request, "max_lat not assigned.");
-        if (myMap.find("min_long") != myMap.end()) {
-            min_long = stof(myMap["min_long"]);
-        } else send_error(request, "min_long not assigned.");
-        if (myMap.find("max_long") != myMap.end()) {
-            max_long = stof(myMap["max_long"]);
-        } else send_error(request, "max_long not assigned.");
-        if (myMap.find("multi") != myMap.end()) {
-            multi = stoi(myMap["multi"]);
-        } else multi = 2;
-        rectangle current_rect = fillRect(min_lat, max_lat, min_long, max_long, multi);
-        if(!checkInput(current_rect))
-            send_error(request, "Input error.");
+        if(url.find("//postgraph/") == 0){
+            Graph g_tmp;
+            if(is_pen && boost::num_vertices(g_pen) > 0) {
+                cout << "Using modified Graph" << endl;
+                copy_graph(g_pen, g_tmp);
+            }else {
+                cout << "Using original Graph" << endl;
+                copy_graph(g, g_tmp);
+            }
+            export_graph(g_tmp);
 
-        if (myMap.find("function") != myMap.end()) {
-            function = myMap["function"];
-        } else send_error(request, "Function not assigned.");
+            http_response response(status_codes::OK);
+            response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+            response.set_body("Exported Graph");
+            request.reply(response);
+            cout << endl;
+        }else if(url.find("//postpenalty/") == 0) {
 
-        http_response response(status_codes::OK);
-        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+            float min_lat = 0.0, max_lat = 0.0, min_long = 0.0, max_long = 0.0;
+            int multi = 1;
+            string function = "";
+            auto body = request.extract_string().get();
+            cout << "body: " << body << endl;
+            map<utility::string_t, utility::string_t> myMap = uri::split_query(body);
 
-        if(function == func[0]){
-            add_penalization_rect(g, g_pen, current_rect);
-            is_pen = true;
-            addRectToList(current_rect, rect_list);
-            response.set_body("Rect penalty applied");
-        }else if(function == func[1]){
-            rectangle to_be_deleted_rect = findRectInList(current_rect, rect_list);
-            if(!checkInput(to_be_deleted_rect))
-                send_error(request, "Rect not found.");
-            del_penalization_rect(g_pen, to_be_deleted_rect);
+            if (myMap.find("min_lat") != myMap.end()) {
+                min_lat = stof(myMap["min_lat"]);
+            } else send_error(request, "min_lat not assigned.");
+            if (myMap.find("max_lat") != myMap.end()) {
+                max_lat = stof(myMap["max_lat"]);
+            } else send_error(request, "max_lat not assigned.");
+            if (myMap.find("min_long") != myMap.end()) {
+                min_long = stof(myMap["min_long"]);
+            } else send_error(request, "min_long not assigned.");
+            if (myMap.find("max_long") != myMap.end()) {
+                max_long = stof(myMap["max_long"]);
+            } else send_error(request, "max_long not assigned.");
+            if (myMap.find("multi") != myMap.end()) {
+                multi = stoi(myMap["multi"]);
+            } else multi = 2;
+            rectangle current_rect = fillRect(min_lat, max_lat, min_long, max_long, multi);
+            if (!checkInput(current_rect))
+                send_error(request, "Input error.");
 
-            if(delElemList(current_rect, rect_list))
-                response.set_body("Rect penalty removed");
-            else
-                response.set_body("Rect not in list");
+            if (myMap.find("function") != myMap.end()) {
+                function = myMap["function"];
+            } else send_error(request, "Function not assigned.");
 
-            if(rect_list.empty())
-                is_pen = false;
-        }else{
-            send_error(request, "Invalid Function.");
+            http_response response(status_codes::OK);
+            response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+
+            if (function == func[0]) {
+                add_penalization_rect(g, g_pen, current_rect);
+                is_pen = true;
+                addRectToList(current_rect, rect_list);
+                response.set_body("Rect penalty applied");
+            } else if (function == func[1]) {
+                rectangle to_be_deleted_rect = findRectInList(current_rect, rect_list);
+                if (!checkInput(to_be_deleted_rect))
+                    send_error(request, "Rect not found.");
+                del_penalization_rect(g_pen, to_be_deleted_rect);
+
+                if (delElemList(current_rect, rect_list))
+                    response.set_body("Rect penalty removed");
+                else
+                    response.set_body("Rect not in list");
+
+                if (rect_list.empty())
+                    is_pen = false;
+            } else {
+                send_error(request, "Invalid Function.");
+            }
+            cout << "Rect Count: " << rect_list.size() << endl;
+            request.reply(response);
+            cout << endl;
         }
-        cout << "Rect Count: " << rect_list.size() << endl;
-        request.reply(response);
-        cout << endl;
     }
     catch (const std::invalid_argument& e) {
 		cout << "Error Argument" << endl;
@@ -174,8 +198,8 @@ void RoutesDealer::handle_get(http_request request){
         float lat = 0.0, lon = 0.0;
         auto url = uri::decode(request.request_uri().to_string());
         auto url_message= uri::decode(request.relative_uri().to_string());
-        cout << url << endl;
-		cout << url_message << endl;
+        cout << "Url: " << url << endl;
+        cout << "Url_message: " << url_message << endl;
 
         if(url.find("//getrects/") == 0){
             auto rects = getRects(rect_list);
@@ -227,8 +251,6 @@ void RoutesDealer::handle_get(http_request request){
             }
 
             auto paths = get_alternative_routes(g_tmp, start, end, num_routes, 0.9, reroute);
-
-            export_graph(g_tmp);
 
             http_response response(status_codes::OK);
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));

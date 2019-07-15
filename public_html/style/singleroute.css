@@ -57,3 +57,16 @@ html, body, #map {
     justify-content: space-between; /* Horizontal center alignment */
     margin-top: 2px;
 }
+
+.button_loading {
+    background-image: url("../assets/loading32.gif");
+
+    width:32px;
+    height:32px;
+    border-color: transparent;
+    margin-top: 0 !important;
+}
+
+.button_loading span {
+    display: none;
+}

@@ -48,6 +48,10 @@
     clear\
     "
 
+#define PIPELINE {LAMBDA_PACK, LOAD_GRAPH, UPLOAD_FUNCTION_AWS}
+
+const string PIPELINE_DESC[] = {"Generating lambda.zip...", "Loading data.btl into lambda.zip...", "Uploading Lambda.zip on AWS..."};
+
 
 // Rect Struct
 struct rectangle {
@@ -148,28 +152,39 @@ void del_penalization_rect(Graph &g_pen, rectangle rect){
 
 template <typename Graph>
 bool export_graph(Graph &g_pen){
-    if(boost::num_vertices(g_pen) == 0)
-        return false;
-
     // Export Graph in data.btl
-    cout << "(1) Exporting Graph in data.btl..." << endl;
+    cout << "[START] (1) Exporting Graph in data.btl..." << endl;
+    if(boost::num_vertices(g_pen) == 0) {
+        cout << "[END] (1) graph not found" << endl;
+        return false;
+    }
     std::ofstream oss("data.btl");{
         boost::archive::text_oarchive oa(oss);
         oa << g_pen;
     }
+    cout << "[END] (1) returned normally" << endl;
 
     // Generate lambda.zip
-    cout << "(2) Generating lambda.zip..." << endl;
-    system(LAMBDA_PACK);
-
     // Load data.btl into lambda.zip
-    cout << "(3) Loading data.btl into lambda.zip..." << endl;
-    system(LOAD_GRAPH);
-
     // Upload Lambda.zip on AWS
-    cout << "(4) Uploading Lambda.zip on AWS..." << endl;
-    system(UPLOAD_FUNCTION_AWS);
-
+    int instr_count = 2;
+    for(const auto& op : PIPELINE) {
+        cout << "[START] (" << instr_count << ") " << PIPELINE_DESC[instr_count-2] << endl;
+        int status_code = system(op);
+        if (status_code < 0) {
+            std::cout << "[END] (" << instr_count << ") Error: " << strerror(errno) << endl;
+            return false;
+        }
+        else {
+            if (WIFEXITED(status_code))
+                cout << "[END] (" << instr_count << ") " << "returned normally, exit code " << WEXITSTATUS(status_code) << endl;
+            else {
+                cout << "[END] (" << instr_count << ") " << "exited abnormally" << endl;
+                return false;
+            }
+        }
+        instr_count++;
+    }
     return true;
 }
 #endif //MAIN_ROUTESPENALIZER_H
