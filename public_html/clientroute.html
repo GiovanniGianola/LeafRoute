@@ -55,11 +55,6 @@
         <!-- bottom aligned tabs -->
         <ul role="tablist">
             <li>
-                <a href="simulation.html" title="Simulation mode">
-                    <i class="fas fa-tachometer-alt"></i>
-                </a>
-            </li>
-            <li>
                 <a href="https://github.com/bebora/LeafRoute" title="LeafRoute repo">
                     <i class="fab fa-github"></i>
                 </a>
@@ -71,7 +66,7 @@
     <div class="leaflet-sidebar-content">
         <div class="leaflet-sidebar-pane" id="home">
             <h1 class="leaflet-sidebar-header">
-                LeafRoute single route
+                LeafRoute client single route
                 <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
             <div class="input-group input-group mb-3 mt-3">
@@ -86,6 +81,9 @@
                 </div>
                 <button type="button" class="btn btn-primary button-search mr-2" id="search" >Search route</button>
                 <button type="button" class="btn btn-primary button-search" id="follow" style="display: none">Follow</button>
+                <!-- Do not remove, will be filled from JS -->
+                <div id="options-panel"></div>
+
                 <div style="width: 90%">
                     <label for="endpoint" style="font-size: 14pt; margin-top: .5rem;">Endpoint</label>
                     <input type="text" id="endpoint" class="form-control" placeholder="Endpoint" aria-label="Endpoint">
@@ -96,26 +94,24 @@
                     </button>
                 </div>
             </div>
-            <!-- Do not remove, will be filled from JS -->
-            <div id="options-panel"></div>
         </div>
     </div>
 </div>
 
 <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
-        integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
-        crossorigin=""></script>
-<script src="scripts/typeahead.bundle.js"></script>
-<script src="scripts/typeahead-address-photon.js"></script>
-<script src="scripts/leaflet-sidebar.js"></script>
-<script src="scripts/utils.js"></script>
-<script src="scripts/MovingMarker.js"></script>
-<script src="scripts/ARLibMarker.js"></script>
-<script src="scripts/StrokePolyline.js"></script>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+            integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+            crossorigin=""></script>
+    <script src="scripts/typeahead.bundle.js"></script>
+    <script src="scripts/typeahead-address-photon.js"></script>
+    <script src="scripts/leaflet-sidebar.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/MovingMarker.js"></script>
+    <script src="scripts/ARLibMarker.js"></script>
+    <script src="scripts/StrokePolyline.js"></script>
 
-<script src="scripts/singleroute.js"></script>
-<script src="scripts/handlePenalty.js"></script>
+    <!--<script src="scripts/clientroute.js"></script>-->
+    <script src="scripts/singleroute.js"></script>
 </body>
 </html>

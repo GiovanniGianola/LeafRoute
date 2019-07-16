@@ -6,6 +6,9 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 }, { 'drawlayer': drawnItems }, { position: 'topleft', collapsed: false }).addTo(map);
 
 
+let pathname = window.location.pathname;
+let endpoint = pathname.includes("singleroute") ? 'http://localhost:1337/' : 'https://b3hqmqau48.execute-api.us-east-1.amazonaws.com/test';
+console.log(pathname);
 
 let inSettings = false;
 
@@ -85,7 +88,6 @@ $('#address-src').typeahead(null, {
     displayKey: 'description'
 });
 
-let endpoint = 'http://localhost:1337/';
 $('#endpoint').val(endpoint);
 var updateEndpoint = function() {
     endpoint = $('#endpoint').val();
